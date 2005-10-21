@@ -129,6 +129,10 @@ class HAC4Tour:
             distances.append(distances[-1] + distanceDelta)
         return distances
     
+    def getTotalDistance(self):
+        """get total distance travelled, in km"""
+        return self.getDistances()[-1]/ 1000.0
+    
     def getRecordingTimeInSeconds(self):
         """get total recording time in seconds for tour"""
         # there is a recording every second

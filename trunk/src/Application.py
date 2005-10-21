@@ -35,7 +35,9 @@ class ApplicationDispatcher:
         self._tours = HAC4TourList()
         self._tour_list_observers = []
         self._save_filename_observers = []
+        self._selected_tour_observers = []
         self._save_filename = None
+        self._selected_tour = None
     
     def import_from_file(self, filename):
         import importer.HAC4FileImporter# import HAC4Fileimporter
@@ -89,3 +91,27 @@ class ApplicationDispatcher:
         for observer in self._save_filename_observers:
             observer.notify_save_filename()
     
+    def add_selected_tour_observer(self, observer):
+        """add_selected_tour_observer(observer) -> void
+        
+        add an observer for the selected tour"""
+        if observer not in self._selected_tour_observers:
+            self._selected_tour_observers.append(observer)
+    
+    def notify_selected_tour_observers(self):
+        """notify_selected_tour_observers()
+        
+        notify all observers of the selected tour of a change"""
+        for observer in self._selected_tour_observers:
+            observer.notify_selected_tour()
+            
+    def set_selected_tour(self, tour):
+        """set_selected_tour(tour) -> void
+        
+        set which tour is selected"""
+        self._selected_tour = tour
+        self.notify_selected_tour_observers()
+    
+    def get_selected_tour(self):
+        """get the currently selected tour"""
+        return self._selected_tour

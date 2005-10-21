@@ -24,14 +24,11 @@
 #(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 #SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
-HAC4TourDataReader is used for reading information from a single tour
+HAC4TourDataReader is used for reading information from several tours
 """
-# $Rev$
 __revision__ = "$LastChangedRevision$"
 
 from time import localtime
-
-from model.HAC4TourList import HAC4TourList
 
 # tourdata begins at record 153
 TOURS_BEGIN = 153
@@ -47,24 +44,28 @@ class HAC4TourDataReader:
         self._weight = weight
         self._year = localtime().tm_year 
         self._tourdata = []
-        self._tourBoundaries = []
+        self._tour_boundaries = []
         self._tours = []
            
     def read(self, data):
+        """read(data) -> list of tours
+        
+        read information from raw data. Outputs a list of tours"""
         self._tourdata = data[TOURS_BEGIN:TOURS_END]
         self._find_tour_boundaries()
         tours = []
         
-        for tourBoundary in self._tourBoundaries:
-            if tourBoundary[0] < tourBoundary[1]:
-                singleTourData = self._tourdata[tourBoundary[0]: tourBoundary[1]]
+        for tour_boundary in self._tour_boundaries:
+            if tour_boundary[0] < tour_boundary[1]:
+                single_tour_data = self._tourdata[tour_boundary[0]: 
+                    tour_boundary[1]]
             else:
-                singleTourData = (self._tourdata[tourBoundary[0]:] + 
-                    self._tourdata[:tourBoundary[1]])
-            assert(len(singleTourData) % 8 == 0)
+                single_tour_data = (self._tourdata[tour_boundary[0]:] + 
+                    self._tourdata[:tour_boundary[1]])
+            assert(len(single_tour_data) % 8 == 0)
             from model.HAC4TourFactory import HAC4TourFactory
-            tourFactory = HAC4TourFactory(self._year)
-            tours.append(tourFactory.constructTour(singleTourData, 
+            tour_factory = HAC4TourFactory(self._year)
+            tours.append(tour_factory.constructTour(single_tour_data, 
                           self._weight))
         
         tours.sort()
@@ -72,28 +73,37 @@ class HAC4TourDataReader:
         return tours
         
     def get_number_of_tours(self):
-        return len(self._tourBoundaries)
+        """get_number_of_tours()
+        
+        returns the number of tours in the data"""
+        return len(self._tour_boundaries)
         
     def _find_tour_boundaries(self):
-        self.tourBoundaries = []
+        """_find_tour_boundaries() -> void
+            
+        find boundaries (start & end) of all tours in the data"""
+        self._tour_boundaries = []
         for index in range(0, len(self._tourdata)):
             block = self._tourdata[index]
             if block[2:] == 'AA':
                 # tourStart found
-                tourStart = index
-                tourEnd = self._find_tour_end(tourStart)
-                self._tourBoundaries.append((tourStart, tourEnd))
+                tour_start = index
+                tour_end = self._find_tour_end(tour_start)
+                self._tour_boundaries.append((tour_start, tour_end))
     
-    def _find_tour_end(self, tourStart):
-        searchIndex = tourStart
+    def _find_tour_end(self, tour_start):
+        """find_tour_end(tour_start) -> integer
+        
+        find end of tour started at tour_start"""
+        search_index = tour_start
         while 1:
-            searchIndex += 8
-            if searchIndex >= len(self._tourdata):
-                searchIndex = searchIndex - len(self._tourdata)
-            if self._tourdata[searchIndex][2:] == 'DD':
+            search_index += 8
+            if search_index >= len(self._tourdata):
+                search_index = search_index - len(self._tourdata)
+            if self._tourdata[search_index][2:] == 'DD':
                 # end of your found
                 break
-        return searchIndex
+        return search_index
         
 if __name__ == '__main__':
     import sys

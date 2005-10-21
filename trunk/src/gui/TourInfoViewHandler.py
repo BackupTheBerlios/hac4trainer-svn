@@ -23,38 +23,48 @@
 #ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 #(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 #SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-"""Implements the GUI class for HAC4 Trainer"""
+"""handles the text view widget holding information on the tour"""
+__revision__ = '$Rev$'
 
-# make sure we can import our own packages
-import sys
-sys.path.append('..')
-
+from HAC4TrainerEventHandler import HAC4TrainerEventHandler
 import gtk
-import gtk.glade
-
-from GtkApplication import GtkApplication
-from MainWindowEventHandler import MainWindowEventHandler
-from TreeViewEventHandler import TreeViewEventHandler
-from TourInfoViewHandler import TourInfoViewHandler
-
 import logging
 
-DEFAULT_GLADE_FILENAME = 'hac4trainer.glade'
-
-class Controller:
-    def __init__(self, xmlFileName = DEFAULT_GLADE_FILENAME):
-        self.widgets = gtk.glade.XML(xmlFileName)
-        self.application = GtkApplication(self.widgets)
-        self.mainWindowHandler = MainWindowEventHandler(self.application, self.widgets)
-        self.treeViewEventHandler = TreeViewEventHandler(self.application, self.widgets)
-        self.tourInfoEventHandler = TourInfoViewHandler(self.application, self.widgets)
+class TourInfoViewHandler(HAC4TrainerEventHandler):
+    """handler for the TourTextView widget"""
+    
+    def __init__(self, application, widgets):
+        HAC4TrainerEventHandler.__init__(self,application, widgets)
         
-    def run(self):
-    	self.application.start()
-
-if __name__ == '__main__':
-    import sys
-    logging.basicConfig(level=logging.DEBUG)
-    sys.path.append('..')
-    controller = Controller()
-    controller.run()
+        self.get_application().add_selected_tour_observer(self)
+        self.init_text_view()
+    
+    def signals_connect(self, widgets):
+        pass
+    
+    def init_text_view(self):
+        pass
+    
+    def set_label(self, label_string, value_string):
+        label = self.get_widgets().get_widget(label_string)
+        label.set_label(value_string)
+        
+    def set_weight_label(self, tour):
+        self.set_label('weight_value_label', "%d kg" % (tour.getWeight()))
+    
+    def set_distance_label(self, tour):
+        self.set_label('distance_value_label', "%d km" % (tour.getTotalDistance()))
+    
+    def set_date_label(self, tour):
+        from time import strftime
+        date_string = strftime("%A, %d, %H:%M", tour.getStartTime().timetuple())
+        self.set_label('date_value_label', date_string)
+    def notify_selected_tour(self):
+        tour = self.get_application().get_selected_tour()
+        self.set_weight_label(tour)
+        self.set_distance_label(tour)
+        self.set_date_label(tour)
+        
+        
+    
+    

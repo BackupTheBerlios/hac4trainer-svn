@@ -105,16 +105,16 @@ class TreeViewEventHandler(HAC4TrainerEventHandler):
             iter = treeStore.append(months_iter["%d/%d" % (year, month)],
                                          [startTime_str])
             self._tourIterMap[iter] = tour
-            print self.get_store().get_path(iter), iter
+            self._tourIterMap[self.get_store().get_path(iter)] = tour
     
     def on_selection(self, selection):
         logging.debug("made a selection in the treeView")
         (model, iter) = selection.get_selected()
-        for (key, value) in self._tourIterMap.items():
-            print value, key
-            
-        print self._tourIterMap[iter]
-        print self.get_store().get_path(iter)
-        print self.get_store().get_path(self.get_store().iter_parent(iter))
-        print self.get_store().get(iter, 0)
+        path = self.get_store().get_path(iter)
+        try:
+            self.get_application().set_selected_tour(self._tourIterMap[path])
+        except IndexError, e:
+            # non-leaf node selected.
+            pass
+       
 #        print 'selected tour = %s' % (repr(self._tourIterMap[iter]))
