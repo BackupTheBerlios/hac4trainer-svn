@@ -33,7 +33,9 @@ class ApplicationDispatcher:
     the backend application (and back in some cases)"""
     def __init__(self):
         self._tours = HAC4TourList()
-        self._tour_list_listeners = []
+        self._tour_list_observers = []
+        self._save_filename_observers = []
+        self._save_filename = None
     
     def import_from_file(self, filename):
         import importer.HAC4FileImporter# import HAC4Fileimporter
@@ -48,12 +50,42 @@ class ApplicationDispatcher:
     
     def get_tour_list(self):
         return self._tours
+    
+    def get_save_filename(self):
+        """get the filename we save under by default"""
+        return self._save_filename
+    
+    def set_save_filename(self, filename):
+        """set the filename we save under by default"""
+        self._save_filename = filename
+        self.notify_save_filename_observers()
         
-    def add_tour_list_observer(self, listener):    
-        if listener not in self._tour_list_listeners:
-            self._tour_list_listeners.append(listener)
+    def save_tour_list(self):
+        """save the tour list to a file"""
+        from fileops.PickleTourListIO import PickleTourListIO
+        file_writer = PickleTourListIO()
+        file_writer.write_tour_list(self._tours, self.get_save_filename())
+    
+    def open_tour_list(self):
+        """save the tour list to a file"""
+        from fileops.PickleTourListIO import PickleTourListIO
+        file_reader = PickleTourListIO()
+        self._tours = file_reader.read_tour_list(self.get_save_filename())
+        self.notify_tour_list_observers()
+        
+    def add_tour_list_observer(self, observer):    
+        if observer not in self._tour_list_observers:
+            self._tour_list_observers.append(observer)
     
     def notify_tour_list_observers(self):
-        for listener in self._tour_list_listeners:
+        for listener in self._tour_list_observers:
             listener.notify_tour_list()
+    
+    def add_save_filename_observer(self, observer):
+        if observer not in self._save_filename_observers:
+            self._save_filename_observers.append(observer)
+            
+    def notify_save_filename_observers(self):
+        for observer in self._save_filename_observers:
+            observer.notify_save_filename()
     
