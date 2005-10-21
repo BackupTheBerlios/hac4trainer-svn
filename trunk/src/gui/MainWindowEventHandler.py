@@ -50,7 +50,7 @@ class MainWindowEventHandler(HAC4TrainerEventHandler):
         self._widgets = widgets
         self._window = widgets.get_widget("mainWindow")
         self._set_title()
-        self.getApplication().add_save_filename_observer(self)
+        self.get_application().add_save_filename_observer(self)
 
     def signals_connect(self, widgets):
         widgets.signal_connect("on_mainWindow_destroy_event", 
@@ -65,10 +65,10 @@ class MainWindowEventHandler(HAC4TrainerEventHandler):
             self.on_open_tour_list_activate)
          
     def on_mainWindow_delete_event(self, window, event):
-        self.getApplication().quit()
+        self.get_application().quit()
    
     def on_mainWindow_destroy_event(self,window, event):
-       	self.getApplication().quit() 
+       	self.get_application().quit() 
 
     def on_import_from_file_activate(self, window, data = None):
         file_chooser = self._widgets.get_widget('dialog_import_from_file')
@@ -86,7 +86,7 @@ class MainWindowEventHandler(HAC4TrainerEventHandler):
         response = file_chooser.run()
         if response == gtk.RESPONSE_OK:
             logging.debug(file_chooser.get_filename() + ' selected')
-            self.getApplication().import_from_file(file_chooser.get_filename())
+            self.get_application().import_from_file(file_chooser.get_filename())
         else:
             logging.debug('no filename selected')
         #file_chooser.destroy()
@@ -108,18 +108,18 @@ class MainWindowEventHandler(HAC4TrainerEventHandler):
         response = file_chooser.run()
         if response == gtk.RESPONSE_OK:
             logging.debug(file_chooser.get_filename() + ' selected')
-            self.getApplication().set_save_filename(file_chooser.get_filename())
-            self.getApplication().save_tour_list()
+            self.get_application().set_save_filename(file_chooser.get_filename())
+            self.get_application().save_tour_list()
         else:
             logging.debug('no filename selected')
         #file_chooser.destroy()
         file_chooser.hide()
         
     def on_save_tour_list_activate(self, window, data = None):
-        if self.getApplication().get_save_filename() == None:
+        if self.get_application().get_save_filename() == None:
             self.on_save_as_tour_list_activate(window, data)
         else:
-            self.getApplication().save_tour_list()
+            self.get_application().save_tour_list()
     
     def on_open_tour_list_activate(self, window, data = None):
         file_chooser = self._widgets.get_widget('dialog_open_tour_list')
@@ -137,15 +137,15 @@ class MainWindowEventHandler(HAC4TrainerEventHandler):
         response = file_chooser.run()
         if response == gtk.RESPONSE_OK:
             logging.debug(file_chooser.get_filename() + ' selected')
-            self.getApplication().set_save_filename(file_chooser.get_filename())
-            self.getApplication().open_tour_list()
+            self.get_application().set_save_filename(file_chooser.get_filename())
+            self.get_application().open_tour_list()
         else:
             logging.debug('no filename selected')
         #file_chooser.destroy()
         file_chooser.hide()
     
     def _set_title(self):
-        filename = self.getApplication().get_save_filename()
+        filename = self.get_application().get_save_filename()
         if filename == None:
             filename = 'None'
         self._window.set_title('HAC4Trainer - ' + filename)

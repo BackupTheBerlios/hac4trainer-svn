@@ -36,10 +36,10 @@ class HAC4TrainerEventHandler:
         self._widgets = widgets
         self.signals_connect(widgets)
 
-    def getApplication(self):
+    def get_application(self):
         """return the application"""
         return self._application
     
-    def getWidgets(self):
+    def get_widgets(self):
         return self._widgets
 

@@ -52,7 +52,7 @@ class TreeViewEventHandler(HAC4TrainerEventHandler):
         return self.get_view().get_selection()
     
     def init_tree_view(self):
-        self._treeView = self.getWidgets().get_widget('date_tree_view')
+        self._treeView = self.get_widgets().get_widget('date_tree_view')
         
         treeStore = gtk.TreeStore(str)
         self.get_view().set_model(treeStore)
@@ -67,7 +67,7 @@ class TreeViewEventHandler(HAC4TrainerEventHandler):
         # init the tree selection stuff
         self.init_tree_selection()
         
-        self.getApplication().add_tour_list_observer(self)
+        self.get_application().add_tour_list_observer(self)
     
     def init_tree_selection(self):
         treeSelection = self.get_view().get_selection()
@@ -80,7 +80,7 @@ class TreeViewEventHandler(HAC4TrainerEventHandler):
         # clear the tree and get the new tours
         treeStore = self.get_view().get_model()
         treeStore.clear()
-        tours= self.getApplication().get_tour_list().get_tours()
+        tours= self.get_application().get_tour_list().get_tours()
         
         years_iter = {}
         months_iter = {}

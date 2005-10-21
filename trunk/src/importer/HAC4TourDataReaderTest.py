@@ -39,7 +39,7 @@ class HAC4TourDataReaderTestCase(unittest.TestCase):
         
         self.reader.read(data)
         
-        self.assertEqual(self.reader.getNumberOfTours(), 19)
+        self.assertEqual(self.reader.get_number_of_tours(), 19)
         
 if __name__ == '__main__':
     import sys

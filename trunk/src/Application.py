@@ -41,7 +41,7 @@ class ApplicationDispatcher:
         import importer.HAC4FileImporter# import HAC4Fileimporter
         try:
             fileImporter = importer.HAC4FileImporter.HAC4FileImporter(filename)
-            self._tours.merge_tours(fileImporter.doImport())
+            self._tours.merge_tours(fileImporter.do_import())
             self.notify_tour_list_observers()
         except importer.HAC4Importer.HAC4DataLengthError, e:
             return "error, wrong datalength"

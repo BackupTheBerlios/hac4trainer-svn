@@ -43,7 +43,7 @@ infoDataInfo = [(0, 'DATA_4_HEX', 'wheelPerimeter'),
 			(18, 'DATA_2_2_2_2_TIMEDELTA', 'totalTravelTime')]
 			
 			
-def readHex(hexString):
+def read_hex(hexString):
 	try:
 		hexValue = int(hexString, 16)
 	except ValueError:
@@ -51,7 +51,7 @@ def readHex(hexString):
 			"[%s] is not a Hexadecimal value" % (hexString))
 	return hexValue
 
-def readDec(decimalString):
+def read_dec(decimalString):
 	try:
 		decValue = int(decimalString, 10)
 	except ValueError:
@@ -89,17 +89,17 @@ class HAC4InformationReader:
 			index = piece[0]
 			size = piece[1]
 			if size == 'DATA_DATE_4_2_2':
-				self.readDecDateValue(infoData[index], infoData[index + 1],
+				self.read_dec_date_value(infoData[index], infoData[index + 1],
 					piece[2])
 			elif size == 'DATA_4_4_HEX':
 				self.readHex8Value(infoData[index], infoData[index + 1], 
 					piece[2])
 			elif size == 'DATA_4_HEX':
-				self.readHex4Value(infoData[index], piece[2])
+				self.read_Hex4_value(infoData[index], piece[2])
 			elif size == 'DATA_2_2_TIMEDELTA':
-				self.readDecTimeDeltaCountDown(infoData[index], piece[2])
+				self.read_dec_time_delta_countdown(infoData[index], piece[2])
 			elif size == 'DATA_2_2_2_2_TIMEDELTA':
-				self.readDecTimeDeltaTotalTime(infoData[index],
+				self.read_dec_time_delta_total_time(infoData[index],
 						infoData[index + 1], piece[2])
 			else:
 				raise ValueError('unknown data type')
@@ -111,43 +111,43 @@ class HAC4InformationReader:
 		
 		return tours
 	
-	def readDecTimeDeltaTotalTime(self, hourString, secondsMinuteString, name):
-		hours = readDec(hourString[:2])
-		hoursTimes100 = readDec(hourString[2:]) 
-		minutes = readDec(secondsMinuteString[2:])
-		seconds = readDec(secondsMinuteString[:2])
+	def read_dec_time_delta_total_time(self, hourString, secondsMinuteString, name):
+		hours = read_dec(hourString[:2])
+		hoursTimes100 = read_dec(hourString[2:]) 
+		minutes = read_dec(secondsMinuteString[2:])
+		seconds = read_dec(secondsMinuteString[:2])
 		self._info[name] = timedelta(hours = hours + 100 * hoursTimes100,
 									  minutes = minutes, seconds = seconds)
 		
-	def readDecDateValue(self, yearString, monthDayString, name):
-		year = readDec(yearString)
-		month = readDec(monthDayString[:2])
-		day = readDec(monthDayString[2:])
+	def read_dec_date_value(self, yearString, monthDayString, name):
+		year = read_dec(yearString)
+		month = read_dec(monthDayString[:2])
+		day = read_dec(monthDayString[2:])
 		
 		self._info[name] = date(year, month, day)
 		
-	def readDecTimeDeltaCountDown(self, timeDeltaString, name):
-		minutes = readDec(timeDeltaString[:2])
-		seconds = readDec(timeDeltaString[2:])
+	def read_dec_time_delta_countdown(self, timeDeltaString, name):
+		minutes = read_dec(timeDeltaString[:2])
+		seconds = read_dec(timeDeltaString[2:])
 		
 		self._info[name] = timedelta(minutes = minutes, seconds = seconds)
 		
 	def readHex8Value(self, valueHighString, valueLowString, name):
-		valueHigh = readHex(valueHighString)
-		valueLow = readHex(valueLowString)
+		valueHigh = read_hex(valueHighString)
+		valueLow = read_hex(valueLowString)
 		
 		self._info[name] = (int(pow(2, 16) * valueHigh)) + valueLow
 	
-	def readHex4Value(self, value, name):
-		self._info[name] = readHex(value)
+	def read_Hex4_value(self, value, name):
+		self._info[name] = read_hex(value)
 	
-	def readHex2Value(self, valueString, number, name):
+	def read_hex2_value(self, valueString, number, name):
 		if number == 1:
 			value = valueString[:2]
 		else:
 			value = valueString[2:]
 			
-		self._info[name] = readHex(value[:number*2])
+		self._info[name] = read_hex(value[:number*2])
 
 	
 if __name__ == '__main__':

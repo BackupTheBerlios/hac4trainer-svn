@@ -38,17 +38,17 @@ class HAC4FileImporterConstructorTestCase(unittest.TestCase):
 		f.close()
 		
 		importer = HAC4FileImporter(ROOT_PATH + "/data/testdatafile.dat")
-		importer.doImport()
-		self.assertEqual(data, importer.getRawData())
+		importer.do_import()
+		self.assertEqual(data, importer.get_raw_data())
 	
 	def testNonExistingDataFile(self):
 		importer = HAC4FileImporter(ROOT_PATH + "/data/nonexistingfile.dat")
 		
-		self.assertRaises(IOError, importer.doImport)
+		self.assertRaises(IOError, importer.do_import)
 	
 	def testWrongLengthDataFile(self):
 		importer = HAC4FileImporter(ROOT_PATH + "/data/wronglengthdatafile.dat")
-		self.assertRaises(HAC4DataLengthError, importer.doImport)
+		self.assertRaises(HAC4DataLengthError, importer.do_import)
 
 class HAC4FileImporterMethodsTestCase(unittest.TestCase):
 	def setUp(self):
@@ -58,13 +58,13 @@ class HAC4FileImporterMethodsTestCase(unittest.TestCase):
 		f = file(ROOT_PATH + "/data/testdatafile.dat")
 		data = f.read()
 		f.close()
-		self.importer.setRawData(data)
+		self.importer.set_raw_data(data)
 		print len(data)
-		print len(self.importer.getRawData())
+		print len(self.importer.get_raw_data())
 		#self.assertEqual(data, self.importer.getRawData())
 	
 	def testDoImport(self):
-		self.importer.doImport()
+		self.importer.do_import()
 		
 if __name__ == '__main__':
 	import sys

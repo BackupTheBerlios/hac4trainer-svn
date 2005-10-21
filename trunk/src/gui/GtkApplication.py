@@ -34,7 +34,7 @@ class GtkApplication(ApplicationDispatcher):
         ApplicationDispatcher.__init__(self)
         self._widgets = widgets
 
-    def getWidgets(self):
+    def get_widgets(self):
         return self._widgets
 
     def start(self):

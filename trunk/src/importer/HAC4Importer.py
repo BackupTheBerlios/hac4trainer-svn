@@ -48,25 +48,25 @@ class HAC4Importer:
 	def __init__(self):
 		raise NotImplementedError
 
-	def setRawData(self, data):
+	def set_raw_data(self, data):
 		if len(data) != HAC4Importer.DATA_LENGTH:
 				logging.error("data has wrong length, is %d but should be %d" % 
 					(len(data), HAC4Importer.DATA_LENGTH))
 				raise HAC4DataLengthError("data length is %d instead of %d"
 					% (len(data), HAC4Importer.DATA_LENGTH))
 		
-		self._extractDataBlocks(data)
-		if not self.identifyHAC4():
+		self._extract_data_blocks(data)
+		if not self.identify_HAC4():
 			logging.error("Data not from HAC4")
 			raise HAC4DataNotFromHAC4Error("data not identified as coming from HAC4")
 	
-	def doImport(self):
+	def do_import(self):
 		from HAC4InformationReader import HAC4InformationReader
 		reader = HAC4InformationReader()
 		tours = reader.read(self._dataBlocks)
 		return tours
 	
-	def _extractDataBlocks(self, data):
+	def _extract_data_blocks(self, data):
 		dataBlocks = data.split()
 		if (len(dataBlocks) != 
 				HAC4Importer.DATA_LENGTH / HAC4Importer.BLOCK_LEN):
@@ -79,11 +79,11 @@ class HAC4Importer:
 				HAC4Importer.DATA_LENGTH / HAC4Importer.BLOCK_LEN))
 		self._dataBlocks = dataBlocks
 	
-	def getRawData(self):
+	def get_raw_data(self):
 		"""return data"""
 		return '\n'.join(self._dataBlocks) + '\n'
 	
-	def identifyHAC4(self):
+	def identify_HAC4(self):
 		if self._dataBlocks[HAC4_DEVICE_SIG[0]] != HAC4_DEVICE_SIG[1]:
 			return 0
 		else:

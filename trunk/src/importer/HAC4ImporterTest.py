@@ -26,10 +26,10 @@
 import unittest
 from HAC4Importer import HAC4Importer
 
-class	HAC4ImporterTestCase(unittest.TestCase):
+class HAC4ImporterTestCase(unittest.TestCase):
 	"""super class for all testcases here"""
 	
-	def testConstructorRaisesException(self):
+	def test_constructor_raises_exception(self):
 		"""We should not be able to call instantiate a  HAC4Importer, 
 		it should be implented in a subclass"""
 		self.assertRaises(NotImplementedError,

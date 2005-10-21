@@ -40,19 +40,19 @@ class HAC4FileImporter(HAC4Importer):
             logging.error("Unable to open file %s: %s" % (self._filename, error.strerror))
             raise
         
-        self.setRawData(datafile.read())
+        self.set_raw_data(datafile.read())
         datafile.close()
     
-    def doImport(self):
+    def do_import(self):
         logging.debug('FileImporter: starting import')
         self._readFile()
-        return HAC4Importer.doImport(self)
+        return HAC4Importer.do_import(self)
 
 if __name__ == '__main__':
     import sys
     sys.path.append('..')
     importer = HAC4FileImporter("../data/testdatafile.dat")
-    tours = importer.doImport()
+    tours = importer.do_import()
     print tours
     print len(tours)
     #print importer.getRawData()
