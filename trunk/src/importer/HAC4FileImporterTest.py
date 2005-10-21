@@ -67,4 +67,6 @@ class HAC4FileImporterMethodsTestCase(unittest.TestCase):
 		self.importer.doImport()
 		
 if __name__ == '__main__':
+	import sys
+	sys.path.append('..')
 	unittest.main()
