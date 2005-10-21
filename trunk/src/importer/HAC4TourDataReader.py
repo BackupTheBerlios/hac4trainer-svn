@@ -26,7 +26,8 @@
 """
 HAC4TourDataReader is used for reading information from a single tour
 """
-__revision__ = '$Rev'
+# $Rev
+__revision__ = "$LastChangedRevision"
 
 from time import localtime
 
