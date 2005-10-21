@@ -25,6 +25,8 @@
 #SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from time import localtime
 
+from model.HAC4TourList import HAC4TourList
+
 # tourdata begins at record 153
 TOURS_BEGIN = 153
 # tourdata ends at record 16385
@@ -59,6 +61,7 @@ class HAC4TourDataReader:
                           self._weight))
         
         tours.sort()
+        
         return tours
         
     def getNumberOfTours(self):

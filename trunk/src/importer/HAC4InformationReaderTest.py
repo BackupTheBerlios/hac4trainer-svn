@@ -109,4 +109,6 @@ class HAC4InformationReaderTestCase(unittest.TestCase):
 		
 
 if __name__ == '__main__':
+	import sys
+	sys.path.append('..')
 	unittest.main()	

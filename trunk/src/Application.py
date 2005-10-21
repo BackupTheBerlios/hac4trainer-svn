@@ -23,36 +23,37 @@
 #ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 #(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 #SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-"""Implements the GUI class for HAC4 Trainer"""
 
-# make sure we can import our own packages
-import sys
-sys.path.append('..')
-
-import gtk
-import gtk.glade
-
-from GtkApplication import GtkApplication
-from MainWindowEventHandler import MainWindowEventHandler
-from TreeViewEventHandler import TreeViewEventHandler
-
+"""Main application."""
 import logging
+from model.HAC4TourList import HAC4TourList
 
-DEFAULT_GLADE_FILENAME = 'hac4trainer.glade'
-
-class Controller:
-    def __init__(self, xmlFileName = DEFAULT_GLADE_FILENAME):
-        self.widgets = gtk.glade.XML(xmlFileName)
-        self.application = GtkApplication(self.widgets)
-        mainWindowHandler = MainWindowEventHandler(self.application, self.widgets)
-        treeViewEventHandler = TreeViewEventHandler(self.application, self.widgets)
+class ApplicationDispatcher:
+    """Main application class. This is used to dispatch from the GUI to
+    the backend application (and back in some cases)"""
+    def __init__(self):
+        self._tours = HAC4TourList()
+        self._tour_list_listeners = []
+    
+    def import_from_file(self, filename):
+        import importer.HAC4FileImporter# import HAC4Fileimporter
+        try:
+            fileImporter = importer.HAC4FileImporter.HAC4FileImporter(filename)
+            self._tours.merge_tours(fileImporter.doImport())
+            self.notify_tour_list_observers()
+        except importer.HAC4Importer.HAC4DataLengthError, e:
+            return "error, wrong datalength"
+        except Exception, e:
+            print e
+    
+    def get_tour_list(self):
+        return self._tours
         
-    def run(self):
-    	self.application.start()
-
-if __name__ == '__main__':
-    import sys
-    logging.basicConfig(level=logging.DEBUG)
-    sys.path.append('..')
-    controller = Controller()
-    controller.run()
+    def add_tour_list_observer(self, listener):    
+        if listener not in self._tour_list_listeners:
+            self._tour_list_listeners.append(listener)
+    
+    def notify_tour_list_observers(self):
+        for listener in self._tour_list_listeners:
+            listener.notify_tour_list()
+    

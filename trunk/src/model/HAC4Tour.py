@@ -69,6 +69,10 @@ class HAC4Tour:
         """set start time of tour"""
         self._startTime = startTime
     
+    def getStartTime(self):
+        """return start time of tour"""
+        return self._startTime
+    
     def setStartDistance(self, startDistance):
         """set the total distance travelled before start of this tour"""
         self._startDistance = startDistance
@@ -150,9 +154,6 @@ class HAC4Tour:
             + ", average Speed: " + repr(self.getAverageSpeed())
             + ", recording Time: " + repr(self.getRecordingTimeInSeconds() / 60) + " minutes"
             + ", distance: " + repr(self.getDistances()[-1] / 1000.0))
-    
-    def getStartTime(self):
-        return self._startTime
         
     def __cmp__(self, tour):
         if self._startTime < tour.getStartTime():

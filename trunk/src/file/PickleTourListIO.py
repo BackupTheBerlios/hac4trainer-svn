@@ -23,36 +23,44 @@
 #ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 #(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 #SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-"""Implements the GUI class for HAC4 Trainer"""
-
-# make sure we can import our own packages
-import sys
-sys.path.append('..')
-
-import gtk
-import gtk.glade
-
-from GtkApplication import GtkApplication
-from MainWindowEventHandler import MainWindowEventHandler
-from TreeViewEventHandler import TreeViewEventHandler
-
+import cPickle
 import logging
 
-DEFAULT_GLADE_FILENAME = 'hac4trainer.glade'
-
-class Controller:
-    def __init__(self, xmlFileName = DEFAULT_GLADE_FILENAME):
-        self.widgets = gtk.glade.XML(xmlFileName)
-        self.application = GtkApplication(self.widgets)
-        mainWindowHandler = MainWindowEventHandler(self.application, self.widgets)
-        treeViewEventHandler = TreeViewEventHandler(self.application, self.widgets)
+class PickleTourListIO:
+    """use pickle to write a list of tours."""
+    
+    def __init__(self):
+        pass
+    
+    def write_tour_list(self, tours, filename):
+        """write_tour_list(tours, filename)
+        write a list of tours to file filename. 
+        TODO: This method needs to catch exception from file() and 
+        from the import pickle methods
         
-    def run(self):
-    	self.application.start()
-
-if __name__ == '__main__':
-    import sys
-    logging.basicConfig(level=logging.DEBUG)
-    sys.path.append('..')
-    controller = Controller()
-    controller.run()
+        returns void"""
+        write_file = file(filename, 'wb')
+        cPickle.dump(tours, write_file)
+        write_file.close()
+    
+    def read_tour_list(self, filename):
+        """read_tour_list(filename)
+        
+        read a list of tours from a filename.
+        
+        returns: TourList object or none if there's an error"""
+        try:
+            read_file = file(filename, 'rb')
+        except IOError, e:
+            logging.error("Error opening file [%s]. It probably does not exist",
+                           filename)
+            return None
+        
+        tours = cPickle.load(read_file)
+        read_file.close()
+        
+        return tours
+    
+        
+        
+        

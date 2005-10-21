@@ -24,35 +24,38 @@
 #(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 #SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Main application."""
-import logging
-
-class ApplicationDispatcher:
-    """Main application class. This is used to dispatch from the GUI to
-    the backend application (and back in some cases)"""
-    def __init__(self):
-        self._tours = []
-        self._tour_list_listeners = []
+class HAC4TourList:
+    """implements a list of tours"""
+    def __init__(self, tours = []):
+        self._tours = tours
+        self._tours.sort()
+        self._tour_datetime_map = {}
+        self._update_datetime_map()
     
-    def import_from_file(self, filename):
-        import importer.HAC4FileImporter# import HAC4Fileimporter
-        try:
-            fileImporter = importer.HAC4FileImporter.HAC4FileImporter(filename)
-            self._tours += fileImporter.doImport()
-            self.notify_tour_list_observers()
-        except importer.HAC4Importer.HAC4DataLengthError, e:
-            return "error, wrong datalength"
-        except Exception, e:
-            print e
-    
-    def getTours(self):
-        return self._tours
+    def merge_tours(self, new_tours):
+        """merge(tours)
         
-    def add_tour_list_observer(self, listener):    
-        if listener not in self._tour_list_listeners:
-            self._tour_list_listeners.append(listener)
+        merge new_tours with the tours currently stored so no double tours are
+        stored. It returns the number of tours added."""
+        original_size = len(self._tours)
+        for tour in new_tours:
+            start_time = tour.getStartTime()
+            if start_time not in self._tour_datetime_map.keys():
+                self._tours.append(tour)
+        new_size = len(self._tours)
+        
+        self._tours.sort()
+        self._update_datetime_map()
+        return new_size - original_size
     
-    def notify_tour_list_observers(self):
-        for listener in self._tour_list_listeners:
-            listener.notify_tour_list()
+    def get_tours(self):
+        """get list of tours"""
+        return self._tours
     
+    def _update_datetime_map(self):
+        """update the datetime map with the tours currently stored"""
+        self._tour_datetime_map = {}
+        
+        for tour in self._tours:
+            self._tour_datetime_map[tour.getStartTime()] = tour
+        

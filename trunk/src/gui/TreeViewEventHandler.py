@@ -80,7 +80,7 @@ class TreeViewEventHandler(HAC4TrainerEventHandler):
         # clear the tree and get the new tours
         treeStore = self.get_view().get_model()
         treeStore.clear()
-        tours = self.getApplication().getTours()
+        tours= self.getApplication().get_tour_list().get_tours()
         
         years_iter = {}
         months_iter = {}
