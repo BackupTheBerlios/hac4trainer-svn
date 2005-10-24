@@ -33,6 +33,7 @@ class ApplicationDispatcher:
     the backend application (and back in some cases)"""
     def __init__(self):
         self._tours = HAC4TourList()
+        self._tours_changed = false
         self._tour_list_observers = []
         self._save_filename_observers = []
         self._selected_tour_observers = []
@@ -43,8 +44,11 @@ class ApplicationDispatcher:
         import importer.HAC4FileImporter# import HAC4Fileimporter
         try:
             fileImporter = importer.HAC4FileImporter.HAC4FileImporter(filename)
-            self._tours.merge_tours(fileImporter.do_import())
-            self.notify_tour_list_observers()
+            nr_tours_changed = self._tours.merge_tours(fileImporter.do_import())
+            if nr_tours_changed > 0:
+                self.notify_tour_list_observers()
+                self._tours_changed = true
+            
         except importer.HAC4Importer.HAC4DataLengthError, e:
             return "error, wrong datalength"
         except Exception, e:
@@ -67,6 +71,7 @@ class ApplicationDispatcher:
         from fileops.PickleTourListIO import PickleTourListIO
         file_writer = PickleTourListIO()
         file_writer.write_tour_list(self._tours, self.get_save_filename())
+        self._tours_changed = false
     
     def open_tour_list(self):
         """save the tour list to a file"""
@@ -74,6 +79,7 @@ class ApplicationDispatcher:
         file_reader = PickleTourListIO()
         self._tours = file_reader.read_tour_list(self.get_save_filename())
         self.notify_tour_list_observers()
+        self._tours_changed = false
         
     def add_tour_list_observer(self, observer):    
         if observer not in self._tour_list_observers:
@@ -115,3 +121,7 @@ class ApplicationDispatcher:
     def get_selected_tour(self):
         """get the currently selected tour"""
         return self._selected_tour
+    
+    def is_tours_changed(self):
+        """is_tours_changed() -> boolean"""
+        return self._tours_changed == true

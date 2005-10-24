@@ -77,6 +77,9 @@ class HAC4Importer:
 			raise HAC4DataNotFromHAC4Error("not the right amount of data"
 				" blocks. Is %d, should be %d" % (len(dataBlocks),
 				HAC4Importer.DATA_LENGTH / HAC4Importer.BLOCK_LEN))
+
+		# make sure all blocks are in uppercase
+		dataBlocks = [block.upper() for block in dataBlocks]
 		self._dataBlocks = dataBlocks
 	
 	def get_raw_data(self):
@@ -84,7 +87,10 @@ class HAC4Importer:
 		return '\n'.join(self._dataBlocks) + '\n'
 	
 	def identify_HAC4(self):
-		if self._dataBlocks[HAC4_DEVICE_SIG[0]] != HAC4_DEVICE_SIG[1]:
+		print len(self._dataBlocks[0])
+		if self._dataBlocks[HAC4_DEVICE_SIG[0]].upper() != HAC4_DEVICE_SIG[1]:
+			logging.error('data device signature = %s' %
+				(self._dataBlocks[HAC4_DEVICE_SIG[0]]))
 			return 0
 		else:
 			return 1

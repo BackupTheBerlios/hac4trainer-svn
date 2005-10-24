@@ -51,7 +51,12 @@ class HAC4FileImporter(HAC4Importer):
 if __name__ == '__main__':
     import sys
     sys.path.append('..')
-    importer = HAC4FileImporter("../data/testdatafile.dat")
+    if len(sys.argv) < 2:
+	    print 'usage %s <data file>' % (sys.argv[0])
+	    sys.exit(-1)
+    else:
+	    filename = sys.argv[1]
+    importer = HAC4FileImporter(filename)
     tours = importer.do_import()
     print tours
     print len(tours)
