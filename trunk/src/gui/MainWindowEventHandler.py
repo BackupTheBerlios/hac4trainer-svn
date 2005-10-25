@@ -94,26 +94,19 @@ class MainWindowEventHandler(HAC4TrainerEventHandler):
 
     def on_save_as_tour_list_activate(self, window, data = None):
         file_chooser = self._widgets.get_widget('dialog_save_tour_list')
-        
-        filter = gtk.FileFilter()
-        filter.set_name('All Files')
-        filter.add_pattern('*')
-        file_chooser.add_filter(filter)
-        
-        filter = gtk.FileFilter()
-        filter.set_name('HAC4Trainer files')
-        filter.add_pattern('*.hdf')
-        file_chooser.add_filter(filter)
-        
+      
         response = file_chooser.run()
         if response == gtk.RESPONSE_OK:
             logging.debug(file_chooser.get_filename() + ' selected')
             self.get_application().set_save_filename(file_chooser.get_filename())
             self.get_application().save_tour_list()
+
         else:
             logging.debug('no filename selected')
         #file_chooser.destroy()
         file_chooser.hide()
+        
+        
         
     def on_save_tour_list_activate(self, window, data = None):
         if self.get_application().get_save_filename() == None:
@@ -125,24 +118,31 @@ class MainWindowEventHandler(HAC4TrainerEventHandler):
         file_chooser = self._widgets.get_widget('dialog_open_tour_list')
         
         filter = gtk.FileFilter()
+        filter.set_name('HAC4Trainer files')
+        filter.add_pattern('*.hdf')
+        file_chooser.add_filter(filter)
+
+        filter = gtk.FileFilter()
         filter.set_name('All Files')
         filter.add_pattern('*')
         file_chooser.add_filter(filter)
         
-        filter = gtk.FileFilter()
-        filter.set_name('HAC4Trainer files')
-        filter.add_pattern('*.hdf')
-        file_chooser.add_filter(filter)
-        
+        is_file_opened_succesfully = 1
         response = file_chooser.run()
         if response == gtk.RESPONSE_OK:
             logging.debug(file_chooser.get_filename() + ' selected')
             self.get_application().set_save_filename(file_chooser.get_filename())
-            self.get_application().open_tour_list()
+            is_file_opened_succesfully = self.get_application().open_tour_list()
+                
         else:
             logging.debug('no filename selected')
         #file_chooser.destroy()
         file_chooser.hide()
+
+        if not is_file_opened_succesfully:
+            dialog = self._widgets.get_widget('dialog_error_opening_file')
+            response = dialog.run()
+            dialog.hide()
     
     def _set_title(self):
         filename = self.get_application().get_save_filename()

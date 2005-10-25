@@ -1,8 +1,9 @@
 #Copyright (c) 2005, Ilja Booij (ibooij@gmail.com)
 #All rights reserved.
 #
-#Redistribution and use in source and binary forms, with or without modification, 
-#are permitted provided that the following conditions are met:
+#Redistribution and use in source and binary forms, with or 
+#without modification, are permitted provided that the following 
+#conditions are met:
 #
 #    * Redistributions of source code must retain the above copyright notice, 
 #    this list of conditions and the following disclaimer.
@@ -25,6 +26,7 @@
 #SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Main application."""
+__revision__ = "$Rev$"
 import logging
 from model.HAC4TourList import HAC4TourList
 
@@ -33,7 +35,7 @@ class ApplicationDispatcher:
     the backend application (and back in some cases)"""
     def __init__(self):
         self._tours = HAC4TourList()
-        self._tours_changed = false
+        self._tours_changed = 0
         self._tour_list_observers = []
         self._save_filename_observers = []
         self._selected_tour_observers = []
@@ -41,20 +43,27 @@ class ApplicationDispatcher:
         self._selected_tour = None
     
     def import_from_file(self, filename):
+        """import new tours from a raw data file
+
+        return 1 if successfull
+        return 0 if not successfull"""
         import importer.HAC4FileImporter# import HAC4Fileimporter
         try:
-            fileImporter = importer.HAC4FileImporter.HAC4FileImporter(filename)
-            nr_tours_changed = self._tours.merge_tours(fileImporter.do_import())
+            file_importer = importer.HAC4FileImporter.HAC4FileImporter(filename)
+            nr_tours_changed = self._tours.merge_tours(file_importer.do_import())
             if nr_tours_changed > 0:
                 self.notify_tour_list_observers()
-                self._tours_changed = true
+                self._tours_changed = 1 
             
-        except importer.HAC4Importer.HAC4DataLengthError, e:
-            return "error, wrong datalength"
-        except Exception, e:
-            print e
+        except importer.HAC4Importer.HAC4DataLengthError, exception:
+            return 0 
+         
+        except Exception, exception:
+            logging.error(repr(exception))
+        return 1
     
     def get_tour_list(self):
+        """get the current tours list, which is of type model.HAC4TourList"""
         return self._tours
     
     def get_save_filename(self):
@@ -71,29 +80,40 @@ class ApplicationDispatcher:
         from fileops.PickleTourListIO import PickleTourListIO
         file_writer = PickleTourListIO()
         file_writer.write_tour_list(self._tours, self.get_save_filename())
-        self._tours_changed = false
+        self._tours_changed = 0
     
     def open_tour_list(self):
-        """save the tour list to a file"""
-        from fileops.PickleTourListIO import PickleTourListIO
+        """save the tour list to a file
+    
+        return 1 if succesful
+        return 0 if not succesful"""
+        from fileops.PickleTourListIO import PickleTourListIO, TourLoadingError
         file_reader = PickleTourListIO()
-        self._tours = file_reader.read_tour_list(self.get_save_filename())
+        try:
+            self._tours = file_reader.read_tour_list(self.get_save_filename())
+        except TourLoadingError:
+            return 0
         self.notify_tour_list_observers()
-        self._tours_changed = false
+        self._tours_changed = 0
+        return 1
         
     def add_tour_list_observer(self, observer):    
+        """add an observer for the tour list"""
         if observer not in self._tour_list_observers:
             self._tour_list_observers.append(observer)
     
     def notify_tour_list_observers(self):
+        """notify all tour list observers of a change"""
         for listener in self._tour_list_observers:
             listener.notify_tour_list()
     
     def add_save_filename_observer(self, observer):
+        """add an observer for the name of the current save file"""
         if observer not in self._save_filename_observers:
             self._save_filename_observers.append(observer)
             
     def notify_save_filename_observers(self):
+        """notify all observers of the current save filename"""
         for observer in self._save_filename_observers:
             observer.notify_save_filename()
     
@@ -124,4 +144,4 @@ class ApplicationDispatcher:
     
     def is_tours_changed(self):
         """is_tours_changed() -> boolean"""
-        return self._tours_changed == true
+        return self._tours_changed == 1 

@@ -26,6 +26,10 @@
 import cPickle
 import logging
 
+class TourLoadingError(Exception):
+    """error to signify an error in loading tours from a file"""
+    pass
+
 class PickleTourListIO:
     """use pickle to write a list of tours."""
     
@@ -48,17 +52,20 @@ class PickleTourListIO:
         
         read a list of tours from a filename.
         
-        returns: TourList object or none if there's an error"""
+        returns: TourList object or raises TourLoadingError on error"""
         try:
             read_file = file(filename, 'rb')
         except IOError, e:
             logging.error("Error opening file [%s]. It probably does not exist",
                            filename)
             return None
-        
-        tours = cPickle.load(read_file)
+        try:        
+            tours = cPickle.load(read_file)
+        except cPickle.UnpicklingError, e:
+            logging.error("unable to load file. Error = %s" % (e.__str__))
+            raise TourLoadingError()
+    
         read_file.close()
-        
         return tours
     
         
