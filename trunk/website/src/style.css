@@ -1,3 +1,14 @@
+#berliosbanner {
+	position: fixed;
+	top: 5px;
+	right: 5px;
+	/*width: 100px;*/
+	border: 1px solid #000;
+	background: #fff;
+	z-index: 1;
+	padding-left: 1em;
+	padding-right: 1em;
+}
 /* Mast head is simulation of top frame */
 #topbar{ position: fixed;
 top: 0px;

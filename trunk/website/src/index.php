@@ -17,17 +17,7 @@
 <h1>HAC4Trainer</h1>
 </div>
 
-<div id="berliosbanner">
-<p>hosted by <a href="http://developer.berlios.de" title="BerliOS Developer"> <img src="http://developer.berlios.de/bslogo.php?group_id=5060" alt="BerliOS Developer Logo" border="0" height="32" width="124" /></a></p>
-
-
-</div>
 <div id="linkbar">
-<ul>
-<li><a href="index.php">Home</a></li>
-<li><a href="http://developer.berlios.de/projects/hac4trainer/">project
-page</a></li>
-</ul>
 </div>
 
 <div id="main">
@@ -35,6 +25,12 @@ page</a></li>
 For now, I'm working on getting the program to work with a minimal
 feature set. When that's finished (by December 1st 2005), this site
 will be updated. </p>
+
+<p> For more information, please take a look at the <a href="http://developer.berlios.de/projects/hac4trainer/">project
+page</a> </p>
+
+<p> <a href="http://developer.berlios.de" title="BerliOS Developer"> <img src="http://developer.berlios.de/bslogo.php?group_id=5060" alt="BerliOS Developer Logo" border="0" height="32" width="124" /></a> </p>
+
 </div>
 
 </body>
