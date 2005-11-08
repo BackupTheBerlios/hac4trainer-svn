@@ -27,6 +27,7 @@
 from HAC4TrainerEventHandler import HAC4TrainerEventHandler
 
 import gtk
+import gobject
 import logging
 from time import strftime
 
@@ -34,7 +35,6 @@ class TreeViewEventHandler(HAC4TrainerEventHandler):
     
     def __init__(self, application, widgets):
         self._treeView = None
-        self._tourIterMap = {}
         HAC4TrainerEventHandler.__init__(self, application, widgets)
        
     def signals_connect(self, widgets):
@@ -54,16 +54,38 @@ class TreeViewEventHandler(HAC4TrainerEventHandler):
     def init_tree_view(self):
         self._treeView = self.get_widgets().get_widget('date_tree_view')
         
-        treeStore = gtk.TreeStore(str)
+        treeStore = gtk.TreeStore(gobject.TYPE_PYOBJECT, 
+             gobject.TYPE_STRING, # date string
+             gobject.TYPE_STRING, # type of tour
+             gobject.TYPE_STRING, # distance
+             gobject.TYPE_STRING  # time
+        )
         self.get_view().set_model(treeStore)
         
-        treeViewColumn = gtk.TreeViewColumn('Date')
-        self.get_view().append_column(treeViewColumn)
-        
-        cellRenderer = gtk.CellRendererText()
-        treeViewColumn.pack_start(cellRenderer, True)
-        treeViewColumn.add_attribute(cellRenderer, 'text', 0)
-    
+        # Add Date column (1st)
+        dateColumn = gtk.TreeViewColumn('Date')
+        self.get_view().append_column(dateColumn)
+        date_renderer = gtk.CellRendererText()
+        dateColumn.pack_start(date_renderer, True)
+        dateColumn.add_attribute(date_renderer, 'text', 1)
+        # Add Type column (2nd)
+        typeColumn = gtk.TreeViewColumn('Type')
+        self.get_view().append_column(typeColumn)
+        type_renderer = gtk.CellRendererText()
+        typeColumn.pack_start(type_renderer, True)
+        typeColumn.add_attribute(type_renderer, 'text', 2)
+        # Add Distance column (3rd)
+        distanceColumn = gtk.TreeViewColumn('Distance')
+        self.get_view().append_column(distanceColumn)
+        distance_renderer = gtk.CellRendererText()
+        distanceColumn.pack_start(distance_renderer, True)
+        distanceColumn.add_attribute(distance_renderer, 'text', 3)
+        # Add Time column (4rd)
+        timeColumn = gtk.TreeViewColumn('Time')
+        self.get_view().append_column(timeColumn)
+        time_renderer = gtk.CellRendererText()
+        distanceColumn.pack_start(time_renderer, True)
+        distanceColumn.add_attribute(time_renderer, 'text', 4)
         # init the tree selection stuff
         self.init_tree_selection()
         
@@ -86,33 +108,39 @@ class TreeViewEventHandler(HAC4TrainerEventHandler):
         months_iter = {}
         
         for tour in tours:
+            row = [None, None, None, None, None]
             # add year nodes
             startTime = tour.getStartTime()
             year = startTime.year
             if year not in years_iter.keys():
-                iterator = treeStore.append(None, [repr(year)])
+                row[1] = repr(year)
+                iterator = treeStore.append(None, row)
                 years_iter[year] = iterator
             # add month nodes
             month = startTime.month
             if "%d/%d" % (year, month) not in months_iter.keys():
                 month_str = strftime("%B", startTime.timetuple())
-                iterator = treeStore.append(years_iter[year],
-                        [month_str])
+                row[1] = month_str
+                iterator = treeStore.append(years_iter[year], row)
                 months_iter["%d/%d" % (year, month)] = iterator
             
-            
-            startTime_str = strftime("%A, %d, %H:%M", startTime.timetuple())
+            row[0] = tour
+            row[1] = strftime("%A, %d, %H:%M", startTime.timetuple())
+            row[2] = tour.getTypeString()
+            row[3] = "%dkm" % (tour.getTotalDistance())
+            row[4] = str(tour.getRecordingTime())
+
             iter = treeStore.append(months_iter["%d/%d" % (year, month)],
-                                         [startTime_str])
-            self._tourIterMap[iter] = tour
-            self._tourIterMap[self.get_store().get_path(iter)] = tour
+                                         row)
     
     def on_selection(self, selection):
         logging.debug("made a selection in the treeView")
         (model, iter) = selection.get_selected()
-        path = self.get_store().get_path(iter)
         try:
-            self.get_application().set_selected_tour(self._tourIterMap[path])
+            selected_tour = self.get_view().get_model().get_value(iter, 0)
+            if selected_tour != None:
+                self.get_application().set_selected_tour(selected_tour)
+                print self.get_application().get_selected_tour()
         except IndexError, e:
             # non-leaf node selected.
             pass

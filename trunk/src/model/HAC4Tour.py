@@ -31,6 +31,9 @@ class HAC4TourType:
 
 HAC4_TOUR_TYPES = {HAC4TourType.BIKE : 'Bike', HAC4TourType.OTHER: 'Other'}
 
+# 20 seconds per interval
+RECORDING_TIME_PER_INTERVAL = 20 
+
 class HAC4Tour:
     def __init__(self):
         # singular values
@@ -56,6 +59,10 @@ class HAC4Tour:
     def getType(self):
         """return type of tour"""
         return self._type
+    
+    def getTypeString(self):
+        """return type of tour as string"""
+        return HAC4_TOUR_TYPES[self._type]
     
     def setWeight(self, weight):
         """set weight of rider"""
@@ -136,7 +143,7 @@ class HAC4Tour:
     def getRecordingTimeInSeconds(self):
         """get total recording time in seconds for tour"""
         # there is a recording every second
-        return len(self._altitudeDeltas) * 20
+        return len(self._altitudeDeltas) * RECORDING_TIME_PER_INTERVAL
     
     def getRecordingTime(self):
         """get total recording time as a timedelta object"""
@@ -145,8 +152,22 @@ class HAC4Tour:
     def getAverageSpeed(self):
         """get the average speed. This also counts when speed = 0"""
         return (float(self.getDistances()[-1] )
-            / float(self.getRecordingTimeInSeconds())) * 3.6        
+            / float(self.getRecordingTimeInSeconds())) * 3.6
+    
+    def getAverageSpeedCorrected(self):
+        """get the average speed, but don't count intervals where speed 
+        is zero"""
+        # only get intervals that have a positive dis
+        moving_distance_deltas = filter(lambda distance: distance > 0, 
+                                         self._distanceDeltas)
         
+        distance_in_km = sum(moving_distance_deltas) / 1000.0
+        recording_time_moving = (len(moving_distance_deltas) 
+            * RECORDING_TIME_PER_INTERVAL)
+        average_speed = (distance_in_km / recording_time_moving)
+        
+        return average_speed
+             
     def __repr__(self):
         return ("Tour: " 
             + "Type: " + repr(HAC4_TOUR_TYPES[self.getType()]) 
@@ -160,6 +181,8 @@ class HAC4Tour:
             + ", distance: " + repr(self.getDistances()[-1] / 1000.0))
         
     def __cmp__(self, tour):
+        if tour == None:
+            return 1
         if self._startTime < tour.getStartTime():
             return -1
         elif self._startTime > tour.getStartTime():

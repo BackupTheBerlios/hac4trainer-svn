@@ -23,48 +23,23 @@
 #ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 #(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 #SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-"""handles the text view widget holding information on the tour"""
-__revision__ = '$Rev$'
+"""Unit test Test for HAC4Tour.py"""
 
-from HAC4TrainerEventHandler import HAC4TrainerEventHandler
-import gtk
-import logging
+__revision__ = "$rev"
 
-class TourInfoViewHandler(HAC4TrainerEventHandler):
-    """handler for the TourTextView widget"""
-    
-    def __init__(self, application, widgets):
-        HAC4TrainerEventHandler.__init__(self,application, widgets)
-        
-        self.get_application().add_selected_tour_observer(self)
-        self.init_text_view()
-    
-    def signals_connect(self, widgets):
+import unittest
+from HAC4Tour import HAC4Tour
+
+class HAC4TourInitTest(unittest.TestCase):
+    def setUp(self):
         pass
     
-    def init_text_view(self):
-        pass
-    
-    def set_label(self, label_string, value_string):
-        label = self.get_widgets().get_widget(label_string)
-        label.set_label(value_string)
+    def testInit(self):
+        tour = HAC4Tour()
         
-    def set_weight_label(self, tour):
-        self.set_label('weight_value_label', "%d kg" % (tour.getWeight()))
-    
-    def set_distance_label(self, tour):
-        self.set_label('distance_value_label', "%d km" % (tour.getTotalDistance()))
-    
-    def set_date_label(self, tour):
-        from time import strftime
-        date_string = strftime("%A, %d, %H:%M", tour.getStartTime().timetuple())
-        self.set_label('date_value_label', date_string)
-    def notify_selected_tour(self):
-        tour = self.get_application().get_selected_tour()
-        self.set_weight_label(tour)
-        self.set_distance_label(tour)
-        self.set_date_label(tour)
+        self.assertEqual(tour.getType(), None)
+        self.assertEqual(tour.getWeight(), 0)
         
-        
-    
-    
+
+if __name__ == '__main__':
+    unittest.main()

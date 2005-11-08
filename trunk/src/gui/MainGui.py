@@ -35,7 +35,6 @@ import gtk.glade
 from GtkApplication import GtkApplication
 from MainWindowEventHandler import MainWindowEventHandler
 from TreeViewEventHandler import TreeViewEventHandler
-from TourInfoViewHandler import TourInfoViewHandler
 
 import logging
 
@@ -47,7 +46,6 @@ class Controller:
         self.application = GtkApplication(self.widgets)
         self.mainWindowHandler = MainWindowEventHandler(self.application, self.widgets)
         self.treeViewEventHandler = TreeViewEventHandler(self.application, self.widgets)
-        self.tourInfoEventHandler = TourInfoViewHandler(self.application, self.widgets)
         
     def run(self):
     	self.application.start()
