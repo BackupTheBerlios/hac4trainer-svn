@@ -199,6 +199,4 @@ class HAC4TourFactory:
     def _readStartPulse(self, aaRecord):
         """Read heart BPM at start of tour"""
         return int(aaRecord[7], 16)
-    
-    
-    
+

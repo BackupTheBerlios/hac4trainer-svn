@@ -58,7 +58,8 @@ class TreeViewEventHandler(HAC4TrainerEventHandler):
              gobject.TYPE_STRING, # date string
              gobject.TYPE_STRING, # type of tour
              gobject.TYPE_STRING, # distance
-             gobject.TYPE_STRING  # time
+             gobject.TYPE_STRING, # time
+             gobject.TYPE_STRING  # speed
         )
         self.get_view().set_model(treeStore)
         
@@ -86,6 +87,12 @@ class TreeViewEventHandler(HAC4TrainerEventHandler):
         time_renderer = gtk.CellRendererText()
         distanceColumn.pack_start(time_renderer, True)
         distanceColumn.add_attribute(time_renderer, 'text', 4)
+         # Add Speed column (3rd)
+        speedColumn = gtk.TreeViewColumn('Speed')
+        self.get_view().append_column(speedColumn)
+        speed_renderer = gtk.CellRendererText()
+        speedColumn.pack_start(speed_renderer, True)
+        speedColumn.add_attribute(speed_renderer, 'text', 5)
         # init the tree selection stuff
         self.init_tree_selection()
         
@@ -108,7 +115,7 @@ class TreeViewEventHandler(HAC4TrainerEventHandler):
         months_iter = {}
         
         for tour in tours:
-            row = [None, None, None, None, None]
+            row = [None, None, None, None, None, None]
             # add year nodes
             startTime = tour.getStartTime()
             year = startTime.year
@@ -128,9 +135,10 @@ class TreeViewEventHandler(HAC4TrainerEventHandler):
             row[1] = strftime("%A, %d, %H:%M", startTime.timetuple())
             row[2] = tour.getTypeString()
             row[3] = "%dkm" % (tour.getTotalDistance())
-            row[4] = str(tour.getRecordingTime())
+            row[4] = str(tour.getMovingRecordingTime())
+            row[5] = tour.getAverageSpeedCorrected()
 
-            iter = treeStore.append(months_iter["%d/%d" % (year, month)],
+            treeStore.append(months_iter["%d/%d" % (year, month)],
                                          row)
     
     def on_selection(self, selection):

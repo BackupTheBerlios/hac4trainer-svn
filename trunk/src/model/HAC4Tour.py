@@ -25,6 +25,8 @@
 #SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from datetime import datetime, timedelta
 
+import logging
+
 class HAC4TourType:
     BIKE = 1
     OTHER = 2
@@ -145,9 +147,23 @@ class HAC4Tour:
         # there is a recording every second
         return len(self._altitudeDeltas) * RECORDING_TIME_PER_INTERVAL
     
+    def getMovingRecordingTimeInSeconds(self):
+        """get recording time in seconds, but only count intervals where the
+        bike was moving"""
+        moving_distance_deltas = filter(lambda distance: distance > 0,
+                                         self._distanceDeltas)
+        recording_time_moving = (len(moving_distance_deltas) 
+            * RECORDING_TIME_PER_INTERVAL)
+        return recording_time_moving
+    
     def getRecordingTime(self):
         """get total recording time as a timedelta object"""
         return timedelta(seconds = self.getRecordingTimeInSeconds())
+    
+    def getMovingRecordingTime(self):
+        """get recording time, only counting when bike is moving"""
+        return timedelta(seconds = self.getMovingRecordingTimeInSeconds())
+    
     
     def getAverageSpeed(self):
         """get the average speed. This also counts when speed = 0"""
@@ -157,14 +173,13 @@ class HAC4Tour:
     def getAverageSpeedCorrected(self):
         """get the average speed, but don't count intervals where speed 
         is zero"""
-        # only get intervals that have a positive dis
-        moving_distance_deltas = filter(lambda distance: distance > 0, 
-                                         self._distanceDeltas)
-        
-        distance_in_km = sum(moving_distance_deltas) / 1000.0
-        recording_time_moving = (len(moving_distance_deltas) 
-            * RECORDING_TIME_PER_INTERVAL)
-        average_speed = (distance_in_km / recording_time_moving)
+        distance_in_km = sum(self._distanceDeltas) / 1000.0
+        logging.debug("km: " + distance_in_km)
+        recording_time_moving = self.getMovingRecordingTimeInSeconds()
+        logging.debug("time: " + recording_time_moving)
+        if (recording_time_moving == 0):
+            return 0
+        average_speed = (distance_in_km / (float(recording_time_moving) / 60.0))
         
         return average_speed
              

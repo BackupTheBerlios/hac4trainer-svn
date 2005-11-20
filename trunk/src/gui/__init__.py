@@ -23,36 +23,7 @@
 #ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 #(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 #SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-"""Implements the GUI class for HAC4 Trainer"""
+"""Package holding the GUI of the application.
 
-# make sure we can import our own packages
-import sys
-sys.path.append('..')
 
-import gtk
-import gtk.glade
-
-from GtkApplication import GtkApplication
-from MainWindowEventHandler import MainWindowEventHandler
-from TreeViewEventHandler import TreeViewEventHandler
-
-import logging
-
-DEFAULT_GLADE_FILENAME = 'gui/hac4trainer.glade'
-
-class Controller:
-    def __init__(self, xmlFileName = DEFAULT_GLADE_FILENAME):
-        self.widgets = gtk.glade.XML(xmlFileName)
-        self.application = GtkApplication(self.widgets)
-        self.mainWindowHandler = MainWindowEventHandler(self.application, self.widgets)
-        self.treeViewEventHandler = TreeViewEventHandler(self.application, self.widgets)
-        
-    def run(self):
-    	self.application.start()
-
-if __name__ == '__main__':
-    import sys
-    logging.basicConfig(level=logging.DEBUG)
-    sys.path.append('..')
-    controller = Controller()
-    controller.run()
+"""
