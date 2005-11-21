@@ -82,6 +82,12 @@ class ApplicationDispatcher:
         file_writer.write_tour_list(self._tours, self.get_save_filename())
         self._tours_changed = 0
     
+    def export_tour(self, filename):
+        """export a  tour to a specific file"""
+        from fileops.TURTourIO import TURTourIO
+        exporter = TURTourIO()
+        exporter.write_tour(self.get_selected_tour(), filename)
+    
     def open_tour_list(self):
         """save the tour list to a file
     

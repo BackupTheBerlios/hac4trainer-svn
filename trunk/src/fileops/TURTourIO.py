@@ -92,22 +92,28 @@ class TURTourIO:
         """construct new TURTourIO object"""
         pass
     
+    def write_tour(self, tour, filename):
+        """export a tour to a tur file"""
+        (head, tail) = self.get_TUR_data(tour)
+        sample_data = self.pack_samples(tour)
+        
+        print 'exporting...', filename     
+        f = file(filename, 'wb')
+        f.write(head)
+        f.write(sample_data)
+        f.write(tail)
+        f.close()
+    
     def get_TUR_data(self, tour):
         data = self.prepare_data(tour)
         head = HEAD_TEMPLATE % data
-        samples =  self.pack_samples(tour)
-        bottom = "0"
+        bottom = "\n0\n"
         
-        f = file('out','wb')
-        f.write(head)
-        f.write(samples)
-        f.write('\n0\n')
-        f.close()
-    
+        return (head, bottom)
+        
     def prepare_data(self, tour):
         data = {}
         
-#        tour = HAC4Tour()
         date = tour.getStartTime()
         
         data['startdate'] = "%02d.%02d.%4d" % (date.day, date.month, date.year)
@@ -169,20 +175,12 @@ class TURTourIO:
             
     def open_file(self, filename):
         """open a file for writing"""
-        try:
-            return file('filename', 'wb')
-        except IOException, e:
-            print e
-            raise
-    
+        return file('filename', 'wb')
+        
     def close_file(self, file):
         """close a file"""
-        try:
-            close(f)
-        except IOException, e:
-            print e
-            raise
-
+        file.close()
+        
 if __name__ == "__main__":
     import sys
     sys.path.append('..')
@@ -193,5 +191,6 @@ if __name__ == "__main__":
     
 
     tur_writer = TURTourIO()
+    tur_writer.write_tour(tours[5], "tt.tur")
    
             

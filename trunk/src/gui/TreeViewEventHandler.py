@@ -140,6 +140,7 @@ class TreeViewEventHandler(HAC4TrainerEventHandler):
 
             treeStore.append(months_iter["%d/%d" % (year, month)],
                                          row)
+        self._treeView.expand_all()
     
     def on_selection(self, selection):
         logging.debug("made a selection in the treeView")

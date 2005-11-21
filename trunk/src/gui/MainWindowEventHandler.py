@@ -63,6 +63,8 @@ class MainWindowEventHandler(HAC4TrainerEventHandler):
             self.on_save_tour_list_activate)
         widgets.signal_connect("on_open_tour_list_activate",
             self.on_open_tour_list_activate)
+        widgets.signal_connect("on_export_to_tur_activate",
+            self.on_export_to_tur_activate)
          
     def on_mainWindow_delete_event(self, window, event):
         self.get_application().quit()
@@ -96,6 +98,7 @@ class MainWindowEventHandler(HAC4TrainerEventHandler):
         file_chooser = self._widgets.get_widget('dialog_save_tour_list')
       
         response = file_chooser.run()
+        file_chooser.hide()
         if response == gtk.RESPONSE_OK:
             logging.debug(file_chooser.get_filename() + ' selected')
             self.get_application().set_save_filename(file_chooser.get_filename())
@@ -104,10 +107,23 @@ class MainWindowEventHandler(HAC4TrainerEventHandler):
         else:
             logging.debug('no filename selected')
         #file_chooser.destroy()
+        
+    def on_export_to_tur_activate(self, window, data = None):
+        file_chooser = self._widgets.get_widget('dialog_export_tur')
+        
+        # set filename standard to date.tur
+        tour = self._application.get_selected_tour()
+        date = tour.getStartTime()
+        filename = "%4d-%02d-%02d_%02d:%02d.tur" % (date.year, date.month, date.day, date.hour, date.minute)
+        file_chooser.set_current_name(filename)
+        response = file_chooser.run()
         file_chooser.hide()
-        
-        
-        
+        if response == gtk.RESPONSE_OK:
+            logging.debug(file_chooser.get_filename() + ' selected')
+            self.get_application().export_tour(file_chooser.get_filename())
+        else:
+            logging.debug('no filename selected')
+            
     def on_save_tour_list_activate(self, window, data = None):
         if self.get_application().get_save_filename() == None:
             self.on_save_as_tour_list_activate(window, data)
