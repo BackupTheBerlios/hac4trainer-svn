@@ -27,11 +27,13 @@ import unittest
 
 ROOT_PATH = ".."
 DEFAULT_WEIGHT = 75
+MAX_PULSE = 160
+MIN_PULSE = 145
 
 class HAC4TourDataReaderTestCase(unittest.TestCase):
     def setUp(self):
         from HAC4TourDataReader import HAC4TourDataReader
-        self.reader = HAC4TourDataReader(DEFAULT_WEIGHT)
+        self.reader = HAC4TourDataReader(DEFAULT_WEIGHT, (MIN_PULSE,MAX_PULSE),(MIN_PULSE,MAX_PULSE)) 
     
     def testReadTestDataFile(self):
         f = file(ROOT_PATH + '/data/testdatafile.dat', 'rb')

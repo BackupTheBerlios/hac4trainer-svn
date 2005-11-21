@@ -39,9 +39,14 @@ class HAC4TourDataReader:
     """read information on several tours. Uses model.HAC4TourFactory
     to make individual tours"""
     
-    def __init__(self, weight):
+    def __init__(self, global_info):
         """construct a new HAC4TourDataReader."""
-        self._weight = weight
+        self._weight = global_info['weight']
+        self._pulse_limit1 = (global_info['maxPulse1'], global_info['minPulse1'])
+        self._pulse_limit2 = (global_info['maxPulse2'], global_info['minPulse2'])
+        self._total_time = global_info['totalTravelTime']
+        self._total_gained = global_info['totalAscendedMeters']
+        self._total_lost = global_info['totalDescendedMeters']
         self._year = localtime().tm_year 
         self._tourdata = []
         self._tour_boundaries = []
@@ -66,10 +71,25 @@ class HAC4TourDataReader:
             from model.HAC4TourFactory import HAC4TourFactory
             tour_factory = HAC4TourFactory(self._year)
             tours.append(tour_factory.constructTour(single_tour_data, 
-                          self._weight))
+                          self._weight, self._pulse_limit1, 
+                          self._pulse_limit2))
         
-        tours.sort()
-        
+        tours.sort()        
+        # set total travel time on all tours. Because the total travel time
+        # after the last tour is known, we need to subtract in reverse order.
+        # to make this easy, we'll first reverse the order of the tours lost
+        tours.reverse()
+        last_gained = self._total_gained
+        last_lost = self._total_lost
+        last_total_time = self._total_time
+        for tour in tours:
+            tour.setTotalTime(last_total_time)
+            tour.setTotalMetersGained(last_gained)
+            tour.setTotalMetersLost(last_lost)
+            last_total_time -= tour.getRecordingTime()
+            last_gained -= tour.getHeightGain()
+            last_lost -= tour.getHeightLoss()
+        tours.reverse()
         return tours
         
     def get_number_of_tours(self):

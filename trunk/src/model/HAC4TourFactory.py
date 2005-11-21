@@ -43,7 +43,8 @@ class HAC4TourFactory:
         
         self._year = year
         
-    def constructTour(self, data, weight):
+    def constructTour(self, data, weight, pulse_limits_1, 
+                       pulse_limits_2):
         """construct a HAC4Tour object from raw data"""
         logging.debug('starting HAC4TourFactory.constructTour()')
         tour = HAC4Tour()
@@ -53,6 +54,8 @@ class HAC4TourFactory:
         
         # add weight to the tour.
         tour.setWeight(weight)
+        tour.setPulseLimits(1, pulse_limits_1)
+        tour.setPulseLimits(2, pulse_limits_2)
         return tour
         
         

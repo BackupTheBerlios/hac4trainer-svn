@@ -105,7 +105,7 @@ class HAC4InformationReader:
 				raise ValueError('unknown data type')
 		
 		from HAC4TourDataReader import HAC4TourDataReader
-		tourReader = HAC4TourDataReader(self['weight'])
+		tourReader = HAC4TourDataReader(self._info)
 		tours = tourReader.read(data)
 		
 		

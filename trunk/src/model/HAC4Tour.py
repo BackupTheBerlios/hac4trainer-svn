@@ -26,6 +26,7 @@
 from datetime import datetime, timedelta
 
 import logging
+import math
 
 class HAC4TourType:
     BIKE = 1
@@ -45,6 +46,10 @@ class HAC4Tour:
         self._startAltitude = 0
         self._startPulse = 0
         self._weight = 0
+        self._pulse_limits = [(0,0), (0,0)]
+        self._total_time = None # timedelta object
+        self._total_meters_gained = 0
+        self._total_meters_lost = 0
         
         # lists of values
         self._temperatures = []
@@ -74,6 +79,19 @@ class HAC4Tour:
     def getWeight(self):
         return self._weight
     
+    def setPulseLimits(self, nr, limits):
+        """set new limits, nr is 1 or 2"""
+        assert(nr == 1 or nr == 2)
+        assert(len(limits) == 2)
+        
+        self._pulse_limits[nr - 1] = limits
+        
+    def getPulseLimits(self, nr):
+        """get pulse limits"""
+        assert(nr == 1 or nr == 2)
+        
+        return self._pulse_limits[nr - 1]
+    
     def setStartTime(self, startTime):
         """set start time of tour"""
         self._startTime = startTime
@@ -82,6 +100,15 @@ class HAC4Tour:
         """return start time of tour"""
         return self._startTime
     
+    def setTotalTime(self, total_time):
+        """set total exercise time after tour"""
+        assert(isinstance(total_time, timedelta))
+        self._total_time = total_time
+        
+    def getTotalTime(self):
+        """get total time"""
+        return self._total_time
+    
     def setStartDistance(self, startDistance):
         """set the total distance travelled before start of this tour"""
         self._startDistance = startDistance
@@ -89,10 +116,34 @@ class HAC4Tour:
     def setStartAltitude(self, startAltitude):
         """set altitude at start of tour"""
         self._startAltitude = startAltitude
+    
+    def getStartAltitude(self):
+        """return start altitude"""
+        return self._startAltitude
+    
+    def setTotalMetersGained(self, meters_gained):
+        """set total meters gained at end of tour"""
+        self._total_meters_gained = meters_gained
+    
+    def getTotalMetersGained(self):
+        """get total meters gained at end of tour"""
+        return self._total_meters_gained
         
+    def setTotalMetersLost(self, meters_lost):
+        """set total meters lost at end of tour"""
+        self._total_meters_lost = meters_lost
+        
+    def getTotalMetersLost(self):
+        """get total meters lost at end of tour"""
+        return self._total_meters_lost
+    
     def setStartPulse(self, startPulse):
         """set heart pulse at start of tour"""
         self._startPulse = startPulse
+    
+    def getStartPulse(self):
+        """get heart pulse at start of tour"""
+        return self._startPulse
     
     def setTemperatures(self, temperatures):
         """set temperatures. temperatures is a list"""
@@ -104,6 +155,15 @@ class HAC4Tour:
         assert(isinstance(cadences, list))
         self._cadences = cadences
    
+    def getCadences(self):
+        """return all cadence readings. If no cadence measurements
+        are taken, this just returns a list of zeros, of the right length"""
+        return self._cadences
+    
+    def getAverageCadence(self):
+        """return average cadence"""
+        return float(sum(self._cadences)) / len(self._cadences)
+        
     def setPulseDeltas(self, pulseDeltas):
         """set pulseDeltas (list)"""
         assert(isinstance(pulseDeltas, list))
@@ -113,7 +173,14 @@ class HAC4Tour:
         """Return a list of heart BPM's, starting at t=0"""
         pulses = [self._startPulse]
         for pulseDelta in self._pulseDeltas:
-            pulses.append(pulses[-1] + pulseDelta)
+            pulse = pulses[-1] + pulseDelta
+            pulse = max(0, pulse)
+            pulses.append(pulse)
+        return pulses
+    
+    def getAveragePulse(self):
+        pulses = filter(lambda pulse: pulse > 0, self.getPulses())
+        return sum(pulses) / len(pulses)
 
     def setAltitudeDeltas(self, altitudeDeltas):
         """set altitudeDeltas (list)"""
@@ -125,7 +192,48 @@ class HAC4Tour:
         altitudes = [self._startAltitude]
         for altitudeDelta in self._altitudeDeltas:
             altitudes.append(altitudes[-1] + altitudeDelta)
+        return altitudes
+    
+    def getMinimumAltitude(self):
+        """return lowest altitude"""
+        return min(self.getAltitudes())
+    
+    def getMaximumAltitude(self):
+        """return maximum altitude""" 
+        return max(self.getAltitudes())
+    
+    def getHeightGains(self):
+        """return list off all height gains"""
+        return filter(lambda altitudeDelta: altitudeDelta > 0,
+            self._altitudeDeltas)
+            
+    def getHeightGain(self):
+        """return total height gained"""
+        return sum(self.getHeightGains())
+    
+    def getHeightLoss(self):
+        """return total height lost"""
+        return sum(filter(lambda altitudeDelta: altitudeDelta < 0,
+            self._altitudeDeltas))
    
+    def getAverageClimbingRate(self):
+       """return average climbing rate in meters/minute"""
+       return 3.0 * (float(self.getHeightGain()) / float(len(self.getHeightGains())))
+   
+    def getGrades(self):
+        """get climbing and descending (negative) grades"""
+        grades = []
+        for i in range(0, len(self._distanceDeltas)):
+            if self._distanceDeltas[i] > 0:
+                grades.append(100 * (float(self._altitudeDeltas[i]) / 
+                               self._distanceDeltas[i]))
+        return grades
+    
+    def getAverageClimbingGrade(self):
+        """get average climbing rate"""
+        climbing_grades = filter(lambda delta_y : delta_y > 0.0, self.getGrades())
+        return sum(climbing_grades) / len(climbing_grades)
+    
     def setDistanceDeltas(self, distanceDeltas):
         """set pulseDeltas (list)"""
         assert(isinstance(distanceDeltas, list))
@@ -138,9 +246,17 @@ class HAC4Tour:
             distances.append(distances[-1] + distanceDelta)
         return distances
     
+    def getStartDistance(self):
+        """get start distance"""
+        return self._startDistance
+    
     def getTotalDistance(self):
         """get total distance travelled, in km"""
         return self.getDistances()[-1]/ 1000.0
+    
+    def getOdometer(self):
+        """get total distance recorded in computer (of all tours)"""
+        return self._startDistance + self.getTotalDistance()
     
     def getRecordingTimeInSeconds(self):
         """get total recording time in seconds for tour"""
@@ -164,7 +280,6 @@ class HAC4Tour:
         """get recording time, only counting when bike is moving"""
         return timedelta(seconds = self.getMovingRecordingTimeInSeconds())
     
-    
     def getAverageSpeed(self):
         """get the average speed. This also counts when speed = 0"""
         return (float(self.getDistances()[-1] )
@@ -174,15 +289,39 @@ class HAC4Tour:
         """get the average speed, but don't count intervals where speed 
         is zero"""
         distance_in_km = sum(self._distanceDeltas) / 1000.0
-        logging.debug("km: " + distance_in_km)
         recording_time_moving = self.getMovingRecordingTimeInSeconds()
-        logging.debug("time: " + recording_time_moving)
         if (recording_time_moving == 0):
             return 0
-        average_speed = (distance_in_km / (float(recording_time_moving) / 60.0))
+        average_speed = (distance_in_km / (float(recording_time_moving) / (60.0 * 60.0)))
         
         return average_speed
-             
+ 
+    def getTemperatures(self):
+        """return all temperature measurements"""
+        return self._temperatures
+    
+    def getAverageTemperature(self):
+        """return average temperature"""
+        return float(sum(self.getTemperatures())) / len(self.getTemperatures())
+    
+    def getSample(self, nr):
+        """get one sample"""
+        sample = {}
+        sample['distance'] = self.getDistances()[nr]
+        sample['altitude'] = self.getAltitudes()[nr]
+        sample['pulse'] = self.getPulses()[nr]
+        sample['cadence'] = self.getCadences()[nr / 6]
+        sample['temperature'] = self.getTemperatures()[nr / 6]
+        
+        return sample
+    
+    def getSamples(self):
+        """get all samples"""
+        samples = []
+        for i in range(0, len(self._altitudeDeltas)):
+            samples.append(self.getSample(i))
+        return samples
+    
     def __repr__(self):
         return ("Tour: " 
             + "Type: " + repr(HAC4_TOUR_TYPES[self.getType()]) 
