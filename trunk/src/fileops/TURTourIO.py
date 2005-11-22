@@ -97,7 +97,8 @@ class TURTourIO:
         (head, tail) = self.get_TUR_data(tour)
         sample_data = self.pack_samples(tour)
         
-        print 'exporting...', filename     
+        print 'exporting...', filename
+        # TODO catch possible IO exceptions     
         f = file(filename, 'wb')
         f.write(head)
         f.write(sample_data)
@@ -105,14 +106,16 @@ class TURTourIO:
         f.close()
     
     def get_TUR_data(self, tour):
-        data = self.prepare_data(tour)
+        """get tur data, only head and tail of file."""
+        data = self.gather_head_data(tour)
         head = HEAD_TEMPLATE % data
         bottom = "\n0\n"
         
         return (head, bottom)
         
-    def prepare_data(self, tour):
-        data = {}
+    def gather_head_data(self, tour):
+        """gather data for head of tur file"""
+        data = {} 
         
         date = tour.getStartTime()
         
@@ -170,17 +173,7 @@ class TURTourIO:
                 
             blobs.append(sample_blob)
         return "".join(blobs)
-            
-            
-            
-    def open_file(self, filename):
-        """open a file for writing"""
-        return file('filename', 'wb')
-        
-    def close_file(self, file):
-        """close a file"""
-        file.close()
-        
+                    
 if __name__ == "__main__":
     import sys
     sys.path.append('..')

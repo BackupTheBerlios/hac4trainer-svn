@@ -27,6 +27,7 @@
 
 """Main application."""
 __revision__ = "$Rev$"
+
 import logging
 from model.HAC4TourList import HAC4TourList
 
