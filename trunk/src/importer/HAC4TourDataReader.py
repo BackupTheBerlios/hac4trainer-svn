@@ -29,6 +29,7 @@ HAC4TourDataReader is used for reading information from several tours
 __revision__ = "$LastChangedRevision$"
 
 from time import localtime
+import logging
 
 # tourdata begins at record 153
 TOURS_BEGIN = 153
@@ -70,9 +71,12 @@ class HAC4TourDataReader:
             assert(len(single_tour_data) % 8 == 0)
             from model.HAC4TourFactory import HAC4TourFactory
             tour_factory = HAC4TourFactory(self._year)
-            tours.append(tour_factory.constructTour(single_tour_data, 
-                          self._weight, self._pulse_limit1, 
-                          self._pulse_limit2))
+            try:
+                tours.append(tour_factory.constructTour(single_tour_data, 
+                              self._weight, self._pulse_limit1, 
+                              self._pulse_limit2))
+            except Exception, e:
+                logging.error('Exception contructing a tour. Ignoring tour. '  +  str(e))
         
         tours.sort()        
         # set total travel time on all tours. Because the total travel time

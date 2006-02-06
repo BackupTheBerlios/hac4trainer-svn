@@ -34,6 +34,7 @@ do with stuff like the closing of the window.
 """
 from HAC4TrainerEventHandler import HAC4TrainerEventHandler
 import gtk
+import gobject
 import logging
 
 
@@ -65,6 +66,8 @@ class MainWindowEventHandler(HAC4TrainerEventHandler):
             self.on_open_tour_list_activate)
         widgets.signal_connect("on_export_to_tur_activate",
             self.on_export_to_tur_activate)
+        widgets.signal_connect("on_import_from_watch_activate",
+            self.on_import_from_watch_activate)
          
     def on_mainWindow_delete_event(self, window, event):
         self.get_application().quit()
@@ -93,6 +96,31 @@ class MainWindowEventHandler(HAC4TrainerEventHandler):
             logging.debug('no filename selected')
         #file_chooser.destroy()
         file_chooser.hide()
+    
+    def on_import_from_watch_activate(self, window, data = None):
+        """start import from watch"""
+        status_window = self._widgets.get_widget('window_import_from_watch')
+        
+        status_label = self._widgets.get_widget('label_import_from_watch')
+        status_label.set_text('Waiting for data')
+        progress_bar = self._widgets.get_widget('progress_bar_import_from_watch')
+        progress_bar.set_fraction(0.0)
+        
+        status_window.show()
+        
+        self.get_application().start_import_from_watch()
+        self.import_usb_timer = gobject.timeout_add(100, self.get_application().monitor_import_from_watch, self.import_from_watch_update)
+    
+    def import_from_watch_update(self, is_receiving, progress):
+        """this is to be called by the function that is importing from
+        the watch"""
+        progress_bar = self._widgets.get_widget('progress_bar_import_from_watch')
+        progress_bar.set_fraction(0.0)
+        
+        if is_receiving:
+            status_label = self._widgets.get_widget('label_import_from_watch')
+            status_label.set_text('Receiving data')
+        
 
     def on_save_as_tour_list_activate(self, window, data = None):
         file_chooser = self._widgets.get_widget('dialog_save_tour_list')

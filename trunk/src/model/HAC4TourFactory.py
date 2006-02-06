@@ -24,7 +24,7 @@
 #(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 #SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from model.HAC4Tour import HAC4Tour, HAC4_TOUR_TYPES, HAC4TourType
-from datetime import datetime
+from datetime import datetime, date
 import logging
 class HAC4TourFactoryException(Exception):
     pass
@@ -56,6 +56,7 @@ class HAC4TourFactory:
         tour.setWeight(weight)
         tour.setPulseLimits(1, pulse_limits_1)
         tour.setPulseLimits(2, pulse_limits_2)
+        
         return tour
         
         
@@ -182,14 +183,21 @@ class HAC4TourFactory:
         
     def _readStartTime(self, aaRecord):
         """Read the start time of the tour from the AA record"""
-        #TODO: this function should compensate for the fact that the year is
-        # not present in the file.    
         hour = int(aaRecord[2][:2])
         minute = int(aaRecord[2][2:])
         month = int(aaRecord[3][:2])
         day = int(aaRecord[3][2:])
         
-        return datetime(self._year, month, day, hour, minute)
+        # This is some magic. Well, not really, but it can go wrong.
+        # If current_month < month in record, we assume it is a 
+        # recording from the previous year.
+        current_month = date.today().month
+        if (month > current_month):
+            year = self._year - 1
+        else:
+            year = self._year
+        
+        return datetime(year, month, day, hour, minute)
     
     def _readStartDistance(self, aaRecord):
         """Read the total distance travelled before this tour"""

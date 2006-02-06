@@ -63,6 +63,29 @@ class ApplicationDispatcher:
             logging.error(repr(exception))
         return 1
     
+    def start_import_from_watch(self):
+        """import new tour from watch"""
+        
+        from importer.HAC4USBImporter import HAC4USBImporter
+        from importer.HAC4Importer import HAC4Importer
+        self.usb_importer = HAC4USBImporter()
+        self.usb_importer.start()
+        
+    
+    def monitor_import_from_watch(self, callback_progress):
+        assert(self.usb_importer != None)
+        
+        if (not self.usb_importer.is_ready):
+            progress = self.usb_importer.get_progress()
+            if progress == 0.0:
+                receiving = False
+            else:
+                receiving = True
+            callback_progress(receiving, progress)
+            return True
+        else:
+            return False
+        
     def get_tour_list(self):
         """get the current tours list, which is of type model.HAC4TourList"""
         return self._tours
