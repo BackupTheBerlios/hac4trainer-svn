@@ -29,8 +29,8 @@
 import logging
 import fcntl, os, errno
 
-DEVICE = '/dev/ttyUSB0'
-#DEVICE = '/tmp/testdatafile.dat'
+#DEVICE = '/dev/ttyUSB0'
+DEVICE = '/tmp/testdatafile.dat'
 # length of data from HAC4 is always 81930 bytes
 DATA_LENGTH = 81930
 
@@ -53,26 +53,20 @@ class HAC4USBImporter:
     def get_data(self):
         return "".join(self._data)
     
-    
-    def set_ready(self):
-        self.ready = True
-        
     def is_ready(self):
-        return ready
+        return len(self._data) == DATA_LENGTH
         
     def attempt_read(self):
         """attempt to read from the usb port. If the read succeeds,
         the new bytes are added to the data. 
         
-        This function will return True when reading is finished;
-        False otherwise"""
-        
+        The function will return the number of bytes read"""    
         assert(len(self._data) < DATA_LENGTH)
         
         bytes_read = []
         while 1:
             try:
-                data_read = self.usb_port.read(1024)
+                data_read = self.usb_port.read(DATA_LENGTH)
                  
             except IOError, e:
                 if e.args[0] == errno.EAGAIN:
@@ -81,7 +75,7 @@ class HAC4USBImporter:
                 raise
             print 'read ', len(data_read), ' bytes.'
             bytes_read.append(data_read)
-            if len(data_read) < 1024:
+            if len(data_read) < DATA_LENGTH:
                 break
        
         self._data += ''.join(bytes_read)
@@ -89,10 +83,7 @@ class HAC4USBImporter:
         # Post condition
         assert(len(self._data) <= DATA_LENGTH)
             
-        if len(self._data) == DATA_LENGTH:
-            return True
-        else:
-            return False
+        return len(''.join(bytes_read))
             
     def get_progress(self):
         return len(self._data) / float(DATA_LENGTH)

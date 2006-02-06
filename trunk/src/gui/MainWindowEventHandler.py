@@ -51,19 +51,12 @@ class MainWindowEventHandler(HAC4TrainerEventHandler):
         self._widgets = widgets
         self._window = widgets.get_widget("mainWindow")
         self._set_title()
-        self.get_application().add_save_filename_observer(self)
 
     def signals_connect(self, widgets):
         widgets.signal_connect("on_mainWindow_destroy_event", 
 		    self.on_mainWindow_destroy_event)
         widgets.signal_connect("on_import_from_file_activate",
             self.on_import_from_file_activate)
-        widgets.signal_connect("on_save_as_tour_list_activate",
-            self.on_save_as_tour_list_activate)
-        widgets.signal_connect("on_save_tour_list_activate",
-            self.on_save_tour_list_activate)
-        widgets.signal_connect("on_open_tour_list_activate",
-            self.on_open_tour_list_activate)
         widgets.signal_connect("on_export_to_tur_activate",
             self.on_export_to_tur_activate)
         widgets.signal_connect("on_import_from_watch_activate",
@@ -105,36 +98,37 @@ class MainWindowEventHandler(HAC4TrainerEventHandler):
         status_label.set_text('Waiting for data')
         progress_bar = self._widgets.get_widget('progress_bar_import_from_watch')
         progress_bar.set_fraction(0.0)
+        progress_bar.set_text('waiting for input')
         
         status_window.show()
         
         self.get_application().start_import_from_watch()
-        self.import_usb_timer = gobject.timeout_add(100, self.get_application().monitor_import_from_watch, self.import_from_watch_update)
+        self.import_usb_timer = gobject.timeout_add(100, self.import_from_watch_update)
     
-    def import_from_watch_update(self, is_receiving, progress):
+    def import_from_watch_update(self):
         """this is to be called by the function that is importing from
         the watch"""
+        (is_finished, progress, is_receiving, data) = self.get_application().monitor_import_from_watch()
         progress_bar = self._widgets.get_widget('progress_bar_import_from_watch')
-        progress_bar.set_fraction(0.0)
-        
-        if is_receiving:
-            status_label = self._widgets.get_widget('label_import_from_watch')
-            status_label.set_text('Receiving data')
-        
-
-    def on_save_as_tour_list_activate(self, window, data = None):
-        file_chooser = self._widgets.get_widget('dialog_save_tour_list')
-      
-        response = file_chooser.run()
-        file_chooser.hide()
-        if response == gtk.RESPONSE_OK:
-            logging.debug(file_chooser.get_filename() + ' selected')
-            self.get_application().set_save_filename(file_chooser.get_filename())
-            self.get_application().save_tour_list()
-
+        if not is_finished:
+            progress_bar.set_fraction(progress)
+            if not is_receiving:
+                progress_bar.set_text('Not receiving data')
+            else:
+                progress_bar.set_text('Receiving data')
+            
+            # make sure callback is called again!
+            return True
         else:
-            logging.debug('no filename selected')
-        #file_chooser.destroy()
+            # finished
+            progress_bar.set_fraction(progress)
+            progress_bar.set_text('Finished receiving data')
+            self.get_application().import_from_raw_data(data)
+            status_window = self._widgets.get_widget('window_import_from_watch')
+            status_window.hide()
+            
+            # make sure callback is not called again
+            return False
         
     def on_export_to_tur_activate(self, window, data = None):
         file_chooser = self._widgets.get_widget('dialog_export_tur')
@@ -151,48 +145,6 @@ class MainWindowEventHandler(HAC4TrainerEventHandler):
             self.get_application().export_tour(file_chooser.get_filename())
         else:
             logging.debug('no filename selected')
-            
-    def on_save_tour_list_activate(self, window, data = None):
-        if self.get_application().get_save_filename() == None:
-            self.on_save_as_tour_list_activate(window, data)
-        else:
-            self.get_application().save_tour_list()
-    
-    def on_open_tour_list_activate(self, window, data = None):
-        file_chooser = self._widgets.get_widget('dialog_open_tour_list')
-        
-        filter = gtk.FileFilter()
-        filter.set_name('HAC4Trainer files')
-        filter.add_pattern('*.hdf')
-        file_chooser.add_filter(filter)
-
-        filter = gtk.FileFilter()
-        filter.set_name('All Files')
-        filter.add_pattern('*')
-        file_chooser.add_filter(filter)
-        
-        is_file_opened_succesfully = 1
-        response = file_chooser.run()
-        if response == gtk.RESPONSE_OK:
-            logging.debug(file_chooser.get_filename() + ' selected')
-            self.get_application().set_save_filename(file_chooser.get_filename())
-            is_file_opened_succesfully = self.get_application().open_tour_list()
-                
-        else:
-            logging.debug('no filename selected')
-        #file_chooser.destroy()
-        file_chooser.hide()
-
-        if not is_file_opened_succesfully:
-            dialog = self._widgets.get_widget('dialog_error_opening_file')
-            response = dialog.run()
-            dialog.hide()
     
     def _set_title(self):
-        filename = self.get_application().get_save_filename()
-        if filename == None:
-            filename = 'None'
-        self._window.set_title('HAC4Trainer - ' + filename)
-        
-    def notify_save_filename(self):
-        self._set_title()
+        self._window.set_title('HAC4Trainer')

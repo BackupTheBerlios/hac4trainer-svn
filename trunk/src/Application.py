@@ -43,6 +43,26 @@ class ApplicationDispatcher:
         self._save_filename = None
         self._selected_tour = None
     
+    def import_from_raw_data(self, data):
+        import importer.HAC4Importer
+        
+        try:
+            print 'bla'
+            importer = importer.HAC4Importer.HAC4Importer()
+            print 'bla2'
+            importer.set_raw_data(data)
+            nr_tours_changed = self._tours.merge_tours(importer.do_import())
+            if nr_tours_changed > 0:
+                self.notify_tour_list_observers()
+                self._tours_changed = 1 
+        #except importer.HAC4Importer.HAC4DataLengthError, e:
+        #    return 0
+        except Exception, e:
+            logging.error(repr(e))
+            raise e
+        
+        return 1
+       
     def import_from_file(self, filename):
         """import new tours from a raw data file
 
@@ -65,67 +85,43 @@ class ApplicationDispatcher:
     
     def start_import_from_watch(self):
         """import new tour from watch"""
-        
         from importer.HAC4USBImporter import HAC4USBImporter
-        from importer.HAC4Importer import HAC4Importer
-        self.usb_importer = HAC4USBImporter()
-        self.usb_importer.start()
+        self._usb_importer = HAC4USBImporter()
         
-    
-    def monitor_import_from_watch(self, callback_progress):
-        assert(self.usb_importer != None)
+    def monitor_import_from_watch(self):
+        """update import. Try to get more data from usb port
         
-        if (not self.usb_importer.is_ready):
-            progress = self.usb_importer.get_progress()
-            if progress == 0.0:
+        returns a tuple: (finished: boolean, progress: float, receiving, None or data (if finished)"""
+        assert(self._usb_importer != None)
+        
+        bytes_read = self._usb_importer.attempt_read()
+        
+        finished = False
+        progress = self._usb_importer.get_progress()
+        receiving = True
+        data = None
+        if not self._usb_importer.is_ready():
+            finished = False
+            if bytes_read == 0:
                 receiving = False
             else:
                 receiving = True
-            callback_progress(receiving, progress)
-            return True
         else:
-            return False
+            # finished
+            finished = True
+            data = self._usb_importer.get_data()
         
+        return (finished, progress, receiving, data)
+            
     def get_tour_list(self):
         """get the current tours list, which is of type model.HAC4TourList"""
         return self._tours
-    
-    def get_save_filename(self):
-        """get the filename we save under by default"""
-        return self._save_filename
-    
-    def set_save_filename(self, filename):
-        """set the filename we save under by default"""
-        self._save_filename = filename
-        self.notify_save_filename_observers()
-        
-    def save_tour_list(self):
-        """save the tour list to a file"""
-        from fileops.PickleTourListIO import PickleTourListIO
-        file_writer = PickleTourListIO()
-        file_writer.write_tour_list(self._tours, self.get_save_filename())
-        self._tours_changed = 0
     
     def export_tour(self, filename):
         """export a  tour to a specific file"""
         from fileops.TURTourIO import TURTourIO
         exporter = TURTourIO()
         exporter.write_tour(self.get_selected_tour(), filename)
-    
-    def open_tour_list(self):
-        """save the tour list to a file
-    
-        return 1 if succesful
-        return 0 if not succesful"""
-        from fileops.PickleTourListIO import PickleTourListIO, TourLoadingError
-        file_reader = PickleTourListIO()
-        try:
-            self._tours = file_reader.read_tour_list(self.get_save_filename())
-        except TourLoadingError:
-            return 0
-        self.notify_tour_list_observers()
-        self._tours_changed = 0
-        return 1
         
     def add_tour_list_observer(self, observer):    
         """add an observer for the tour list"""
@@ -136,16 +132,6 @@ class ApplicationDispatcher:
         """notify all tour list observers of a change"""
         for listener in self._tour_list_observers:
             listener.notify_tour_list()
-    
-    def add_save_filename_observer(self, observer):
-        """add an observer for the name of the current save file"""
-        if observer not in self._save_filename_observers:
-            self._save_filename_observers.append(observer)
-            
-    def notify_save_filename_observers(self):
-        """notify all observers of the current save filename"""
-        for observer in self._save_filename_observers:
-            observer.notify_save_filename()
     
     def add_selected_tour_observer(self, observer):
         """add_selected_tour_observer(observer) -> void

@@ -59,6 +59,7 @@ class TreeViewEventHandler(HAC4TrainerEventHandler):
              gobject.TYPE_STRING, # type of tour
              gobject.TYPE_STRING, # distance
              gobject.TYPE_STRING, # time
+             gobject.TYPE_STRING, # moving time
              gobject.TYPE_STRING  # speed
         )
         self.get_view().set_model(treeStore)
@@ -82,17 +83,23 @@ class TreeViewEventHandler(HAC4TrainerEventHandler):
         distanceColumn.pack_start(distance_renderer, True)
         distanceColumn.add_attribute(distance_renderer, 'text', 3)
         # Add Time column (4rd)
-        timeColumn = gtk.TreeViewColumn('Time')
+        timeColumn = gtk.TreeViewColumn('Recording Time')
         self.get_view().append_column(timeColumn)
         time_renderer = gtk.CellRendererText()
-        distanceColumn.pack_start(time_renderer, True)
-        distanceColumn.add_attribute(time_renderer, 'text', 4)
-         # Add Speed column (3rd)
+        timeColumn.pack_start(time_renderer, True)
+        timeColumn.add_attribute(time_renderer, 'text', 4)
+        # Add Moving Time column (4rd)
+        movingTimeColumn = gtk.TreeViewColumn('Moving Time')
+        self.get_view().append_column(movingTimeColumn)
+        time_renderer = gtk.CellRendererText()
+        movingTimeColumn.pack_start(time_renderer, True)
+        movingTimeColumn.add_attribute(time_renderer, 'text', 5)
+         # Add Speed column (5th)
         speedColumn = gtk.TreeViewColumn('Speed')
         self.get_view().append_column(speedColumn)
         speed_renderer = gtk.CellRendererText()
         speedColumn.pack_start(speed_renderer, True)
-        speedColumn.add_attribute(speed_renderer, 'text', 5)
+        speedColumn.add_attribute(speed_renderer, 'text', 6)
         # init the tree selection stuff
         self.init_tree_selection()
         
@@ -115,31 +122,35 @@ class TreeViewEventHandler(HAC4TrainerEventHandler):
         months_iter = {}
         
         for tour in tours:
-            row = [None, None, None, None, None, None]
-            # add year nodes
-            startTime = tour.getStartTime()
-            year = startTime.year
-            if year not in years_iter.keys():
-                row[1] = repr(year)
-                iterator = treeStore.append(None, row)
-                years_iter[year] = iterator
-            # add month nodes
-            month = startTime.month
-            if "%d/%d" % (year, month) not in months_iter.keys():
-                month_str = strftime("%B", startTime.timetuple())
-                row[1] = month_str
-                iterator = treeStore.append(years_iter[year], row)
-                months_iter["%d/%d" % (year, month)] = iterator
-            
-            row[0] = tour
-            row[1] = strftime("%A, %d, %H:%M", startTime.timetuple())
-            row[2] = tour.getTypeString()
-            row[3] = "%dkm" % (tour.getTotalDistance())
-            row[4] = str(tour.getMovingRecordingTime())
-            row[5] = tour.getAverageSpeedCorrected()
-
-            treeStore.append(months_iter["%d/%d" % (year, month)],
-                                         row)
+            try:
+                row = [None, None, None, None, None, None, None]
+                # add year nodes
+                startTime = tour.getStartTime()
+                year = startTime.year
+                if year not in years_iter.keys():
+                    row[1] = repr(year)
+                    iterator = treeStore.append(None, row)
+                    years_iter[year] = iterator
+                # add month nodes
+                month = startTime.month
+                if "%d/%d" % (year, month) not in months_iter.keys():
+                    month_str = strftime("%B", startTime.timetuple())
+                    row[1] = month_str
+                    iterator = treeStore.append(years_iter[year], row)
+                    months_iter["%d/%d" % (year, month)] = iterator
+                
+                row[0] = tour
+                row[1] = strftime("%A, %d, %H:%M", startTime.timetuple())
+                row[2] = tour.getTypeString()
+                row[3] = "%.1f km" % (tour.getTotalDistance())
+                row[4] = str(tour.getRecordingTime())
+                row[5] = str(tour.getMovingRecordingTime())
+                row[6] = "%.1f km/h" % (tour.getAverageSpeedCorrected())
+    
+                treeStore.append(months_iter["%d/%d" % (year, month)],
+                                             row)
+            except Exception, e:
+                 print e
         self._treeView.expand_all()
     
     def on_selection(self, selection):

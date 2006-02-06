@@ -232,6 +232,8 @@ class HAC4Tour:
     def getAverageClimbingGrade(self):
         """get average climbing rate"""
         climbing_grades = filter(lambda delta_y : delta_y > 0.0, self.getGrades())
+        if len(climbing_grades) == 0:
+            return 0
         return sum(climbing_grades) / len(climbing_grades)
     
     def setDistanceDeltas(self, distanceDeltas):

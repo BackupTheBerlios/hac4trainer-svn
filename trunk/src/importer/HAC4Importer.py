@@ -46,7 +46,7 @@ class HAC4Importer:
 	BLOCK_LEN = 5
 	
 	def __init__(self):
-		raise NotImplementedError
+		pass
 
 	def set_raw_data(self, data):
 		if len(data) != HAC4Importer.DATA_LENGTH:
