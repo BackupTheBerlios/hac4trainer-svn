@@ -130,7 +130,7 @@ class TURTourIO:
         data['avgtemp'] = "%.4f" % (tour.getAverageTemperature())
         data['avgpulse'] = "%d" % (tour.getAveragePulse())
         data['avgcadence'] = "%.4f" % (tour.getAverageCadence()) 
-        type = tour.getType()
+        type = tour.get_type()
         if type == HAC4TourType.BIKE:
             type_nr = 2
         else:

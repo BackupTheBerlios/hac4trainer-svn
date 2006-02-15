@@ -51,6 +51,7 @@ class MainWindowEventHandler(HAC4TrainerEventHandler):
         self._widgets = widgets
         self._window = widgets.get_widget("mainWindow")
         self._set_title()
+        self._stop_watch_import = False
 
     def signals_connect(self, widgets):
         widgets.signal_connect("on_mainWindow_destroy_event", 
@@ -61,6 +62,8 @@ class MainWindowEventHandler(HAC4TrainerEventHandler):
             self.on_export_to_tur_activate)
         widgets.signal_connect("on_import_from_watch_activate",
             self.on_import_from_watch_activate)
+        widgets.signal_connect("on_import_from_watch_cancel_button_clicked",
+            self.on_import_from_watch_cancel_button_clicked)
          
     def on_mainWindow_delete_event(self, window, event):
         self.get_application().quit()
@@ -103,11 +106,18 @@ class MainWindowEventHandler(HAC4TrainerEventHandler):
         status_window.show()
         
         self.get_application().start_import_from_watch()
+        self._stop_watch_import = False
         self.import_usb_timer = gobject.timeout_add(100, self.import_from_watch_update)
     
     def import_from_watch_update(self):
         """this is to be called by the function that is importing from
         the watch"""
+        if self._stop_watch_import:
+            # stop import 
+            status_window = self._widgets.get_widget('window_import_from_watch')
+            status_window.hide()
+            return False
+        
         (is_finished, progress, is_receiving, data) = self.get_application().monitor_import_from_watch()
         progress_bar = self._widgets.get_widget('progress_bar_import_from_watch')
         if not is_finished:
@@ -129,6 +139,11 @@ class MainWindowEventHandler(HAC4TrainerEventHandler):
             
             # make sure callback is not called again
             return False
+    
+    def on_import_from_watch_cancel_button_clicked(self, widget, data = None):
+        """cancel import"""
+        print 'cancelling import'
+        self._stop_watch_import = True
         
     def on_export_to_tur_activate(self, window, data = None):
         file_chooser = self._widgets.get_widget('dialog_export_tur')

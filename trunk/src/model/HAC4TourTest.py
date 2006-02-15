@@ -37,7 +37,7 @@ class HAC4TourInitTest(unittest.TestCase):
     def testInit(self):
         tour = HAC4Tour()
         
-        self.assertEqual(tour.getType(), None)
+        self.assertEqual(tour.get_type(), None)
         self.assertEqual(tour.getWeight(), 0)
         
 

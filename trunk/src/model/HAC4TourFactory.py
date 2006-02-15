@@ -66,7 +66,7 @@ class HAC4TourFactory:
         """
         record = data[:8]
         
-        tour.setType(self._readType(record))
+        tour.set_type(self._readType(record))
         tour.setStartTime(self._readStartTime(record))
         tour.setStartDistance(self._readStartDistance(record))
         tour.setStartAltitude(self._readStartAltitude(record))

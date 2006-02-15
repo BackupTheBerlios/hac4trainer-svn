@@ -58,12 +58,12 @@ class HAC4Tour:
         self._altitudeDeltas = []
         self._distanceDeltas = []
         
-    def setType(self, type):
+    def set_type(self, type):
         """set the type of tour (BIKE or OTHER)"""
         assert(type in HAC4_TOUR_TYPES)
         self._type = type
         
-    def getType(self):
+    def get_type(self):
         """return type of tour"""
         return self._type
     
@@ -326,7 +326,7 @@ class HAC4Tour:
     
     def __repr__(self):
         return ("Tour: " 
-            + "Type: " + repr(HAC4_TOUR_TYPES[self.getType()]) 
+            + "Type: " + repr(HAC4_TOUR_TYPES[self.get_type()]) 
             + ", Weight: " + repr(self._weight) 
             + ", Start: " + repr(self._startTime)
             + ", initialDistance: " + repr(self._startDistance)
